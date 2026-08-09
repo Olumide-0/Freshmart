@@ -1,9 +1,20 @@
+import Fifth from "@/components/home/fifth";
+import Fourth from "@/components/home/fourth";
+import Hero from "@/components/home/hero";
+import Popular from "@/components/home/popular";
+import Second from "@/components/home/second";
+import Third from "@/components/home/third";
 import Image from "next/image";
 
 export default function Home() {
   return (
    <div>
-    <h1>hello world</h1>
+    <Hero/>
+    <Second/>
+    <Third/>
+    <Popular/>
+    <Fourth/>
+    <Fifth/>
    </div>
   );
 }
