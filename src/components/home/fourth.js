@@ -1,3 +1,4 @@
+"use client";
 import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 import mango from "../../assets/image/image 82.png";
