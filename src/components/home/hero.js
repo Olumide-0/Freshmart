@@ -12,8 +12,8 @@ const STATS = [
 export default function Hero() {
   return (
     <div>
-      <div className="relative mt-48 ">
-        <Image src={hero} alt="" className="w-full object-fit" />
+      <div className="relative -my-10 ">
+        <Image src={hero} alt="" className="w-full h-full object-fit" />
         {/* Content */}
         <div className="absolute inset-0 flex  items-center px-[120px]">
           <div>

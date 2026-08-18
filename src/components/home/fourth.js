@@ -1,5 +1,6 @@
 "use client";
 import Image from "next/image";
+import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import mango from "../../assets/image/image 82.png";
 import lettuce from "../../assets/image/image 84.png";
@@ -7,26 +8,10 @@ import cucumber from "../../assets/image/image 85 (1).png";
 import tomato from "../../assets/image/image 87.png";
 
 const ITEMS = [
-  {
-    title: "Sweet Mangoes",
-    subtitle: "Harvested this week",
-    image: mango,
-  },
-  {
-    title: "Local Lettuce",
-    subtitle: "Crisp, fresh, local",
-    image: lettuce,
-  },
-  {
-    title: "Sweet Mangoes",
-    subtitle: "Picked fresh, everyday",
-    image: tomato,
-  },
-  {
-    title: "Cucumbers",
-    subtitle: "Crips, always fresh",
-    image: cucumber,
-  },
+  { title: "Sweet Mangoes", subtitle: "Harvested this week", image: mango },
+  { title: "Local Lettuce", subtitle: "Crisp, fresh, local", image: lettuce },
+  { title: "Sweet Mangoes", subtitle: "Picked fresh, everyday", image: tomato },
+  { title: "Cucumbers", subtitle: "Crips, always fresh", image: cucumber },
 ];
 
 export default function Fourth() {
@@ -42,10 +27,13 @@ export default function Fourth() {
             delivered within days.
           </p>
         </div>
-        <button className="flex shrink-0 items-center gap-2 text-[16px] font-semibold text-[#3E5730]">
+        <Link
+          href="/fresh-groceries"
+          className="flex shrink-0 items-center gap-2 text-[16px] font-semibold text-[#3E5730]"
+        >
           View All
           <ArrowRight className="h-6 w-6" />
-        </button>
+        </Link>
       </div>
 
       <div className="mt-[28px] grid grid-cols-4 gap-[24px]">

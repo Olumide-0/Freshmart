@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import school from "../../assets/image/image 61.png";
 import party from "../../assets/image/image 133.png";
 import bbq from "../../assets/image/image 134.png";
@@ -12,20 +13,20 @@ import seasonal from "../../assets/image/Frame 107.png";
 import { ArrowRight, X, ChevronRight } from "lucide-react";
 
 const OCCASIONS = [
-  { label: "Breakfast", image: breakfast },
-  { label: "Healthy living", image: healthy },
-  { label: "Mexican Favourites", image: mexican },
-  { label: "Seasonal Specials", image: seasonal },
+  { label: "Breakfast", slug: "breakfast", image: breakfast },
+  { label: "Healthy living", slug: "healthy-living", image: healthy },
+  { label: "Mexican Favourites", slug: "mexican-favourites", image: mexican },
+  { label: "Seasonal Specials", slug: "seasonal-specials", image: seasonal },
 ];
 
 const ALL_CATEGORIES = [
-  { label: "Breakfast", image: breakfast },
-  { label: "Healthy living", image: healthy },
-  { label: "Mexican favourites", image: mexican },
-  { label: "Seasonal specials", image: seasonal },
-  { label: "Party essentials", image: party },
-  { label: "Back to school", image: school },
-  { label: "BBQ & Grills", image: bbq },
+  { label: "Breakfast", slug: "breakfast", image: breakfast },
+  { label: "Healthy living", slug: "healthy-living", image: healthy },
+  { label: "Mexican favourites", slug: "mexican-favourites", image: mexican },
+  { label: "Seasonal specials", slug: "seasonal-specials", image: seasonal },
+  { label: "Party essentials", slug: "party-essentials", image: party },
+  { label: "Back to school", slug: "back-to-school", image: school },
+  { label: "BBQ & Grills", slug: "bbq-grills", image: bbq },
 ];
 
 export default function Third() {
@@ -42,24 +43,23 @@ export default function Third() {
           className="flex items-center gap-2 text-[16px] font-semibold text-[#3E5730]"
         >
           View All
-          <span>
-            <ArrowRight className="w-6 h-6" />
-          </span>
+          <ArrowRight className="w-6 h-6" />
         </button>
       </div>
 
       <div className="mt-[28px] grid grid-cols-4 gap-[24px]">
-        {OCCASIONS.map(({ label, image }) => (
-          <div
+        {OCCASIONS.map(({ label, slug, image }) => (
+          <Link
             key={label}
-            className="relative h-[220px] overflow-hidden rounded-2xl"
+            href={`/occasions/${slug}`}
+            className="relative overflow-hidden rounded-2xl"
           >
             <Image
               src={image}
               alt={label}
               className="h-full w-full object-cover"
             />
-          </div>
+          </Link>
         ))}
       </div>
 
@@ -69,13 +69,8 @@ export default function Third() {
           open ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0"
         }`}
       >
-        {/* Overlay */}
-        <div
-          onClick={() => setOpen(false)}
-          className="absolute inset-0 bg-black/45"
-        />
+        <div onClick={() => setOpen(false)} className="absolute inset-0 bg-black/45" />
 
-        {/* Panel */}
         <div
           className={`absolute right-0 top-0 mt-15 h-[80%] w-full max-w-[560px] transform rounded-tl-xl rounded-bl-xl bg-white px-[40px] py-[36px] shadow-2xl transition-transform duration-300 ${
             open ? "translate-x-0" : "translate-x-full"
@@ -91,10 +86,11 @@ export default function Third() {
           </div>
 
           <div className="mt-[28px] flex h-[calc(100%-90px)] flex-col gap-[16px] overflow-y-auto pr-[10px]">
-            {ALL_CATEGORIES.map(({ label, image }) => (
-              <a
+            {ALL_CATEGORIES.map(({ label, slug, image }) => (
+              <Link
                 key={label}
-                href="#"
+                href={`/occasions/${slug}`}
+                onClick={() => setOpen(false)}
                 className="flex items-center gap-[16px] rounded-2xl border border-[#F0D2A8] bg-white p-[10px]"
               >
                 <Image
@@ -106,7 +102,7 @@ export default function Third() {
                   {label}
                 </span>
                 <ChevronRight className="h-[20px] w-[20px] shrink-0 text-[#1F2937]" strokeWidth={2.5} />
-              </a>
+              </Link>
             ))}
           </div>
         </div>
