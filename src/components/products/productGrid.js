@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import { Heart, Star, Plus } from "lucide-react";
 
 const BADGE_STYLES = {
@@ -17,14 +18,17 @@ export default function ProductGrid({ products }) {
   }
 
   return (
-    <div className=" grid grid-cols-5 gap-[20px]">
+    <div className="mt-[24px] grid grid-cols-5 gap-[20px]">
       {products.map((product, i) => (
         <div key={i} className="flex flex-col overflow-hidden rounded-[14px] bg-white">
-          <div className="relative aspect-square ">
-            <Image src={product.image} alt={product.name} fill className=" object-cover" />
-            <button className="absolute right-[12px] top-[12px] flex h-[32px] w-[32px] items-center justify-center rounded-full bg-white">
-              <Heart className="h-[15px] w-[15px] text-[#C6672E]" strokeWidth={2} />
-            </button>
+          <Link href={product.slug ? `/product/${product.slug}` : "#"} className="relative block aspect-square w-full">
+            <Image
+              src={product.image}
+              alt={product.name}
+              fill
+              sizes="(max-width: 768px) 50vw, 20vw"
+              className="object-cover"
+            />
             {product.badge && (
               <span
                 className={`absolute bottom-[12px] left-[12px] rounded-full px-[12px] py-[4px] text-[12px] font-semibold ${BADGE_STYLES[product.badge]}`}
@@ -32,10 +36,15 @@ export default function ProductGrid({ products }) {
                 {product.badge}
               </span>
             )}
-          </div>
+          </Link>
+          <button className="absolute right-[12px] top-[12px] flex h-[32px] w-[32px] items-center justify-center rounded-full bg-white">
+            <Heart className="h-[15px] w-[15px] text-[#C6672E]" strokeWidth={2} />
+          </button>
 
           <div className="flex flex-1 flex-col px-[16px] py-[16px]">
-            <h3 className="text-[16px] font-bold text-[#1F2937]">{product.name}</h3>
+            <Link href={product.slug ? `/product/${product.slug}` : "#"}>
+              <h3 className="text-[16px] font-bold text-[#1F2937] hover:underline">{product.name}</h3>
+            </Link>
             <p className="mt-[2px] text-[13px] text-gray-500">1g</p>
 
             <div className="mt-[6px] flex items-center gap-[6px]">
