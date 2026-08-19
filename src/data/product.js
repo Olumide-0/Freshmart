@@ -18,23 +18,38 @@ import produce from "../assets/image/Frame 92.png";
 import carrot1 from "../assets/image/image 113.png"
 import onions from "../assets/image/image 114 (1).png"
 
-export const PRODUCTS = [
+import lettuce1 from "../assets/image/Frame 172.png"
+import lettuce2 from "../assets/image/Frame 173.png"
+import lettuce3 from "../assets/image/Frame 175.png"
+import lettuce4 from "../assets/image/image 124.png"
+
+import mango1 from "../assets/image/image 82 (1).png"
+import mango2 from "../assets/image/Frame 174.png"
+import mango3 from "../assets/image/Frame 173 (1).png"
+import mango4 from "../assets/image/Frame 175 (1).png"
+
+import brocolli1 from "../assets/image/Frame 172.png"
+import brocolli2 from "../assets/image/Frame 173.png"
+import brocolli3 from "../assets/image/Frame 175.png"
+import brocolli4 from "../assets/image/image 124.png"
+
+const RAW_PRODUCTS = [
   // ---------- Fresh Produce (15) ----------
-  { category: "fresh-produce", image: produce, name: "Broccoli", price: "42", cta: "cart" },
-  { category: "fresh-produce", image: mango, name: "Fresh Mango", price: "42", cta: "cart" },
+  { category: "fresh-produce", image: produce, name: "Broccoli", price: "42", cta: "cart", gallery: [brocolli1, brocolli2, brocolli3, brocolli4] },
+  { category: "fresh-produce", image: mango, name: "Fresh Mango", price: "42", cta: "cart", gallery: [mango1, mango2, mango3, mango4] },
   { category: "fresh-produce", image: tomatoes, name: "Tomatoes", badge: "In season", price: "42", cta: "cart" },
   { category: "fresh-produce", image: avocado, name: "Organic Avocado", price: "42", cta: "cart" },
   { category: "fresh-produce", image: pepper, name: "Organic Avocado", price: "42", cta: "cart" },
   { category: "fresh-produce", image: carrot1, name: "Carrot", badge: "Off season", price: "42", cta: "cart" },
-  { category: "fresh-produce", image: onions, name: "Cabbage", price: "42", cta: "cart" },
+  { category: "fresh-produce", image: onions, name: "Cabbage", price: "42", cta: "cart", gallery: [lettuce1, lettuce2, lettuce3, lettuce4] },
   { category: "fresh-produce", image: tomatoes, name: "Tomatoes", badge: "Low in stock", price: "42", cta: "cart" },
   { category: "fresh-produce", image: avocado, name: "Organic Avocado", price: "42", cta: "cart" },
   { category: "fresh-produce", image: pepper, name: "Organic Avocado", price: "42", cta: "cart" },
   { category: "fresh-produce", image: tomatoes, name: "Tomatoes", badge: "Off season", price: "42", cta: "cart" },
   { category: "fresh-produce", image: avocado, name: "Organic Avocado", price: "42", cta: "cart" },
-  { category: "fresh-produce", image: mango, name: "Fresh Mango", price: "42", cta: "cart" },
+  { category: "fresh-produce", image: mango, name: "Fresh Mango", price: "42", cta: "cart", gallery: [mango1, mango2, mango3, mango4] },
   { category: "fresh-produce", image: pepper, name: "Organic Avocado", badge: "In season", price: "42", cta: "cart" },
-  { category: "fresh-produce", image: produceHero, name: "Broccoli", price: "42", cta: "cart" },
+  { category: "fresh-produce", image: produceHero, name: "Broccoli", price: "42", cta: "cart", gallery: [brocolli1, brocolli2, brocolli3, brocolli4] },
 
   // ---------- Bakery (15) ----------
   { category: "bakery", image: croissant, name: "Artisan Sourdough...", price: "42", cta: "cart" },
@@ -155,3 +170,13 @@ export const PRODUCTS = [
   { category: "snacks", image: snacks, name: "Beef Jerky", badge: "Low in stock", price: "42", cta: "cart" },
   { category: "snacks", image: snacks, name: "Chocolate Wafers", price: "42", cta: "cart" },
 ];
+
+// Auto-generate a unique slug per product (name + index, so duplicate names like
+// "Organic Avocado" still get distinct URLs)
+export const PRODUCTS = RAW_PRODUCTS.map((p, i) => ({
+  ...p,
+  slug: `${p.name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "")}-${i}`,
+}));
