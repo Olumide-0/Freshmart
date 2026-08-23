@@ -1,22 +1,42 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowRight, Heart, Star } from "lucide-react";
-import avocado from "../../assets/image/image 67.png";
-import milk from "../../assets/image/image 71.png";
-import chicken from "../../assets/image/image 73.png";
+import { ArrowRight, Heart, Star, CheckCircle2, X } from "lucide-react";
 import produceBasket from "../../assets/image/image 74.png";
 import juices from "../../assets/image/image 77.png";
 import berries from "../../assets/image/image 79.png";
-
-const PRODUCTS = [
-  { name: "Organic Avocado", weight: "1g", rating: 4.9, reviews: 312, price: "$42", image: avocado, liked: false },
-  { name: "Organic Milk", weight: "1g", rating: 4.9, reviews: 312, price: "$50", image: milk, liked: true },
-  { name: "Organic Avocado", weight: "1g", rating: 4.9, reviews: 312, price: "$250", image: chicken, liked: false },
-];
+import { POPULAR } from "@/data/popular";
 
 export default function Popular() {
+  const [toast, setToast] = useState(false);
+
+  const handleAddToCart = () => {
+    setToast(true);
+    setTimeout(() => setToast(false), 2500);
+  };
+
   return (
     <div className="w-full bg-[#F6F0E3] px-[120px] py-[40px]">
+      {/* Toast */}
+      {toast && (
+        <div className="fixed right-[24px] top-[24px] z-[100] flex w-[360px] flex-col overflow-hidden rounded-[14px] bg-white shadow-xl">
+          <div className="flex items-center justify-between px-[20px] py-[18px]">
+            <div className="flex items-center gap-[12px]">
+              <span className="flex h-[28px] w-[28px] items-center justify-center rounded-full bg-[#3E5730]">
+                <CheckCircle2 className="h-[16px] w-[16px] text-white" strokeWidth={2.5} fill="none" />
+              </span>
+              <span className="text-[17px] font-bold text-[#1F2937]">Added to cart</span>
+            </div>
+            <button onClick={() => setToast(false)} aria-label="Close">
+              <X className="h-[20px] w-[20px] text-[#1F2937]" strokeWidth={2} />
+            </button>
+          </div>
+          <div className="h-[6px] w-full bg-[#3E5730]" />
+        </div>
+      )}
+
       <div className="grid grid-cols-2 gap-[24px]">
         {/* Popular this week */}
         <div className="rounded-[24px] bg-[#FCFAF5] p-[36px]">
@@ -39,22 +59,24 @@ export default function Popular() {
           </div>
 
           <div className="mt-[28px] grid grid-cols-3 gap-[20px]">
-            {PRODUCTS.map(({ name, weight, rating, reviews, price, image, liked }, i) => (
+            {POPULAR.map(({ name, weight, rating, reviews, price, image, liked, slug }, i) => (
               <div key={i} className="flex flex-col rounded-2xl bg-white p-[16px] shadow-sm">
-                <div className="relative">
+                <Link href={`/popular-product/${slug}`} className="relative block">
                   <Image src={image} alt={name} className="h-[190px] w-full rounded-xl object-cover" />
-                  <button
-                    aria-label="Favorite"
-                    className="absolute right-[8px] top-[8px] flex h-[38px] w-[38px] items-center justify-center rounded-full bg-white shadow"
-                  >
-                    <Heart
-                      className={`h-[18px] w-[18px] ${liked ? "fill-[#C42A2E] text-[#C42A2E]" : "text-[#C42A2E]"}`}
-                      strokeWidth={2}
-                    />
-                  </button>
-                </div>
+                </Link>
+                <button
+                  aria-label="Favorite"
+                  className="absolute right-[8px] top-[8px] flex h-[38px] w-[38px] items-center justify-center rounded-full bg-white shadow"
+                >
+                  <Heart
+                    className={`h-[18px] w-[18px] ${liked ? "fill-[#C42A2E] text-[#C42A2E]" : "text-[#C42A2E]"}`}
+                    strokeWidth={2}
+                  />
+                </button>
 
-                <p className="mt-[16px] text-[17px] font-bold text-[#1F2937]">{name}</p>
+                <Link href={`/popular-product/${slug}`}>
+                  <p className="mt-[16px] text-[17px] font-bold text-[#1F2937] hover:underline">{name}</p>
+                </Link>
                 <p className="mt-[6px] text-[15px] text-[#4C545F]">{weight}</p>
 
                 <div className="mt-[8px] flex items-center gap-[6px]">
@@ -69,7 +91,10 @@ export default function Popular() {
                   <span className="text-[13px] text-[#8F949B]">MXN</span>
                 </div>
 
-                <button className="mt-[16px] rounded-[10px] bg-[#3F5632] py-[12px] text-[15px] font-semibold text-white">
+                <button
+                  onClick={handleAddToCart}
+                  className="mt-[16px] rounded-[10px] bg-[#3F5632] py-[12px] text-[15px] font-semibold text-white"
+                >
                   Add to cart
                 </button>
               </div>

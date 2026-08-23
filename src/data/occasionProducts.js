@@ -19,7 +19,7 @@ import party from "../assets/image/image 133.png";
 import school from "../assets/image/image 61.png";
 import bbq from "../assets/image/image 134.png";
 
-export const OCCASION_PRODUCTS = [
+const RAW_OCCASION_PRODUCTS = [
   // ---------- Breakfast (15) ----------
   { occasion: "breakfast", image: eggs, name: "Free-Range Eggs", price: "42", cta: "cart" },
   { occasion: "breakfast", image: yogurt, name: "Organic Greek Yog...", price: "42", cta: "cart" },
@@ -91,3 +91,12 @@ export const OCCASION_PRODUCTS = [
     cta: "cart",
   })),
 ];
+
+// Auto-generate a unique slug per item (name + index, so duplicate names still get distinct URLs)
+export const OCCASION_PRODUCTS = RAW_OCCASION_PRODUCTS.map((p, i) => ({
+  ...p,
+  slug: `${p.name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "")}-${i}`,
+}));
