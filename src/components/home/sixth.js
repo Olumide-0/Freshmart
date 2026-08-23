@@ -7,14 +7,14 @@ import cook from "../../assets/image/image 91.png";
 export default function Sixth() {
     return (
         <section className="w-full bg-[#F6F0E3] px-[172px] py-[48px]">
-            <div className="flex  bg-white p-[12px] rounded-[8px]">
+            <div className="flex gap-[22px] bg-white p-[22px] rounded-[8px]">
                 {/* Left: From local farms to your table — full-bleed photo, text overlaid */}
                 <div className="w-[60%]">
                     <div className="w-full relative overflow-hidden rounded-[16px]">
                     <Image
                         src={farm}
                         alt="Local farmer with fresh produce"
-                        className="h-[324px] w-[674px]"
+                        className="h-[324px] w-full"
                     />
 
                     <div className="absolute bottom-14 z-10 flex max-w-[280px] flex-col justify-center gap-[14px] px-[32px]">
@@ -44,7 +44,7 @@ export default function Sixth() {
                     <Image
                         src={cook}
                         alt="Bowl of pasta with fork"
-                        className="h-[324px] w-[456px]"
+                        className="h-[324px] w-full"
                     />
 
                     <div className="absolute top-6 z-10 flex h-full max-w-[280px] flex-col justify-center gap-[14px] px-[32px]">

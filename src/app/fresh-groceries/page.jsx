@@ -1,39 +1,10 @@
+"use client";
+
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Heart, Star, Plus, ChevronRight } from "lucide-react";
-import mango from "../../assets/image/image 82.png";
-import lettuce from "../../assets/image/image 84.png";
-import banana from "../../assets/image/image 111.png";
-import cucumber from "../../assets/image/image 85 (1).png";
-import blueberries from "../../assets/image/image 87.png";
-import strawberries from "../../assets/image/image 110.png";
-import watermelon from "../../assets/image/image 182.png";
-import oranges from "../../assets/image/image 191.png";
-import apples from "../../assets/image/image 185.png";
-import bellpepper from "../../assets/image/image 189.png";
-import corn from "../../assets/image/Frame 90.png";
-import avocado from "../../assets/image/image 112.png";
-import broccoli from "../../assets/image/Frame 88.png";
-
-const FRESH_GROCERIES = [
-  { image: mango, name: "Sweet mangoes", badge: "In season", price: "42", cta: "cart" },
-  { image: lettuce, name: "Lettuce", price: "42", cta: "cart" },
-  { image: banana, name: "Banana", price: "42", cta: "cart" },
-  { image: cucumber, name: "Cucumber", badge: "Low in stock", price: "42", cta: "cart" },
-  { image: blueberries, name: "Blue berries", price: "42", cta: "cart" },
-
-  { image: strawberries, name: "Strawberries", badge: "Low in stock", price: "42", cta: "cart" },
-  { image: watermelon, name: "Watermelon", price: "42", cta: "cart" },
-  { image: oranges, name: "Oranges", badge: "In season", price: "42", cta: "cart" },
-  { image: apples, name: "Organic Apples", price: "42", cta: "add" },
-  { image: bellpepper, name: "Bell pepper", price: "42", cta: "add" },
-
-  { image: corn, name: "Tomatoes", badge: "Low in stock", price: "42", cta: "cart" },
-  { image: avocado, name: "Organic Avocado", price: "42", cta: "cart" },
-  { image: mango, name: "Fresh Mango", price: "42", cta: "cart" },
-  { image: avocado, name: "Organic Avocado", badge: "In season", price: "42", cta: "cart" },
-  { image: broccoli, name: "Broccoli", badge: "In season", price: "42", cta: "cart" },
-];
+import { Heart, Star, Plus, ChevronRight, CheckCircle2, X } from "lucide-react";
+import { FRESH_GROCERIES } from "@/data/freshGroceries";
 
 const BADGE_STYLES = {
   "In season": "bg-[#E6F0E1] text-[#3E5730]",
@@ -42,8 +13,33 @@ const BADGE_STYLES = {
 };
 
 export default function FreshGroceriesPage() {
+  const [toast, setToast] = useState(false);
+
+  const handleAddToCart = () => {
+    setToast(true);
+    setTimeout(() => setToast(false), 2500);
+  };
+
   return (
     <div className="w-full bg-[#F6F0E3] px-[120px] py-[24px]">
+      {/* Toast */}
+      {toast && (
+        <div className="fixed right-[24px] top-[24px] z-[100] flex w-[360px] flex-col overflow-hidden rounded-[14px] bg-white shadow-xl">
+          <div className="flex items-center justify-between px-[20px] py-[18px]">
+            <div className="flex items-center gap-[12px]">
+              <span className="flex h-[28px] w-[28px] items-center justify-center rounded-full bg-[#3E5730]">
+                <CheckCircle2 className="h-[16px] w-[16px] text-white" strokeWidth={2.5} fill="none" />
+              </span>
+              <span className="text-[17px] font-bold text-[#1F2937]">Added to cart</span>
+            </div>
+            <button onClick={() => setToast(false)} aria-label="Close">
+              <X className="h-[20px] w-[20px] text-[#1F2937]" strokeWidth={2} />
+            </button>
+          </div>
+          <div className="h-[6px] w-full bg-[#3E5730]" />
+        </div>
+      )}
+
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-[13px] text-gray-500">
         <Link href="/" className="hover:text-gray-700">
@@ -61,7 +57,7 @@ export default function FreshGroceriesPage() {
       <div className="mt-[24px] grid grid-cols-5 gap-[20px]">
         {FRESH_GROCERIES.map((product, i) => (
           <div key={i} className="flex flex-col overflow-hidden rounded-[14px] bg-white">
-            <div className="relative aspect-square w-full">
+            <Link href={`/fresh-grocery-product/${product.slug}`} className="relative block aspect-square w-full">
               <Image
                 src={product.image}
                 alt={product.name}
@@ -69,9 +65,6 @@ export default function FreshGroceriesPage() {
                 sizes="(max-width: 768px) 50vw, 20vw"
                 className="object-cover"
               />
-              <button className="absolute right-[12px] top-[12px] flex h-[32px] w-[32px] items-center justify-center rounded-full bg-white">
-                <Heart className="h-[15px] w-[15px] text-[#C6672E]" strokeWidth={2} />
-              </button>
               {product.badge && (
                 <span
                   className={`absolute bottom-[12px] left-[12px] rounded-full px-[12px] py-[4px] text-[12px] font-semibold ${BADGE_STYLES[product.badge]}`}
@@ -79,10 +72,15 @@ export default function FreshGroceriesPage() {
                   {product.badge}
                 </span>
               )}
-            </div>
+            </Link>
+            <button className="absolute right-[12px] top-[12px] flex h-[32px] w-[32px] items-center justify-center rounded-full bg-white">
+              <Heart className="h-[15px] w-[15px] text-[#C6672E]" strokeWidth={2} />
+            </button>
 
             <div className="flex flex-1 flex-col px-[16px] py-[16px]">
-              <h3 className="text-[16px] font-bold text-[#1F2937]">{product.name}</h3>
+              <Link href={`/fresh-grocery-product/${product.slug}`}>
+                <h3 className="text-[16px] font-bold text-[#1F2937] hover:underline">{product.name}</h3>
+              </Link>
               <p className="mt-[2px] text-[13px] text-gray-500">1g</p>
 
               <div className="mt-[6px] flex items-center gap-[6px]">
@@ -99,7 +97,10 @@ export default function FreshGroceriesPage() {
                 <sup className="text-[10px] font-semibold text-[#1F2937]">MXN</sup>
               </div>
 
-              <button className="mt-[14px] flex w-full items-center justify-center gap-[6px] rounded-[8px] bg-[#3E5730] py-[10px] text-[14px] font-semibold text-white">
+              <button
+                onClick={handleAddToCart}
+                className="mt-[14px] flex w-full items-center justify-center gap-[6px] rounded-[8px] bg-[#3E5730] py-[10px] text-[14px] font-semibold text-white"
+              >
                 {product.cta === "add" ? (
                   <>
                     <Plus className="h-[14px] w-[14px]" strokeWidth={2.5} />

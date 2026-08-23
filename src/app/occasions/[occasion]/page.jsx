@@ -27,7 +27,7 @@ export default async function OccasionCategoryPage({ params }) {
         {occasionLabel}
       </h1>
 
-      <ProductGrid products={items} />
+      <ProductGrid products={items} basePath="/occasion-product" />
     </div>
   );
 }
