@@ -18,10 +18,10 @@ export default function Popular() {
   };
 
   return (
-    <div className="w-full bg-[#F6F0E3] px-[120px] py-[40px]">
+    <div className="w-full bg-[#F6F0E3] px-[20px] py-[24px] sm:px-[40px] sm:py-[28px] md:px-[64px] md:py-[32px]  xl:py-[40px]">
       {/* Toast */}
       {toast && (
-        <div className="fixed right-[24px] top-[24px] z-[100] flex w-[360px] flex-col overflow-hidden rounded-[14px] bg-white shadow-xl">
+        <div className="fixed left-[16px] right-[16px] top-[16px] z-[100] flex w-auto flex-col overflow-hidden rounded-[14px] bg-white shadow-xl sm:left-auto sm:right-[24px] sm:top-[24px] sm:w-[360px]">
           <div className="flex items-center justify-between px-[20px] py-[18px]">
             <div className="flex items-center gap-[12px]">
               <span className="flex h-[28px] w-[28px] items-center justify-center rounded-full bg-[#3E5730]">
@@ -37,63 +37,67 @@ export default function Popular() {
         </div>
       )}
 
-      <div className="grid grid-cols-2 gap-[24px]">
+      <div className="grid grid-cols-1 gap-[20px] xl:grid-cols-2 xl:gap-[24px]">
         {/* Popular this week */}
-        <div className="rounded-[24px] bg-[#FCFAF5] p-[36px]">
-          <div className="flex items-start justify-between">
+        <div className="rounded-[24px] bg-[#FCFAF5] p-[20px] sm:p-[28px] ">
+          <div className="flex flex-wrap items-start justify-between gap-y-[12px]">
             <div>
-              <h2 className="text-[26px] font-extrabold text-[#1F2937]">
+              <h2 className="text-[20px] font-extrabold text-[#1F2937] sm:text-[22px] md:text-[24px] lg:text-[26px]">
                 Popular this week
               </h2>
-              <p className="mt-[8px] max-w-[420px] text-[15px] leading-[1.5] text-[#4C545F]">
+              <p className="mt-[8px] max-w-[420px] text-[14px] leading-[1.5] text-[#4C545F] sm:text-[15px]">
                 What other shoppers are adding to their carts right now.
               </p>
             </div>
             <Link
               href="/popular-this-week"
-              className="flex shrink-0 items-center gap-2 text-[16px] font-semibold text-[#3E5730]"
+              className="flex shrink-0 items-center gap-2 text-[14px] font-semibold text-[#3E5730] sm:text-[15px] lg:text-[16px]"
             >
               View All
-              <ArrowRight className="h-6 w-6" />
+              <ArrowRight className="h-5 w-5 sm:h-6 sm:w-6" />
             </Link>
           </div>
 
-          <div className="mt-[28px] grid grid-cols-3 gap-[20px]">
+          <div className="mt-[20px] grid grid-cols-1 gap-[16px] sm:grid-cols-2 sm:gap-[18px] lg:grid-cols-3 lg:gap-[8px] xl:mt-[28px]">
             {POPULAR.map(({ name, weight, rating, reviews, price, image, liked, slug }, i) => (
-              <div key={i} className="flex flex-col rounded-2xl bg-white p-[16px] shadow-sm">
+              <div key={i} className="relative flex flex-col rounded-2xl bg-white p-[16px] shadow-sm">
                 <Link href={`/popular-product/${slug}`} className="relative block">
-                  <Image src={image} alt={name} className="h-[190px] w-full rounded-xl object-cover" />
+                  <Image
+                    src={image}
+                    alt={name}
+                    className="h-[150px] w-full rounded-xl object-cover sm:h-[170px] lg:h-[190px]"
+                  />
                 </Link>
                 <button
                   aria-label="Favorite"
-                  className="absolute right-[8px] top-[8px] flex h-[38px] w-[38px] items-center justify-center rounded-full bg-white shadow"
+                  className="absolute right-[8px] top-[8px] flex h-[32px] w-[32px] items-center justify-center rounded-full bg-white shadow sm:h-[38px] sm:w-[38px]"
                 >
                   <Heart
-                    className={`h-[18px] w-[18px] ${liked ? "fill-[#C42A2E] text-[#C42A2E]" : "text-[#C42A2E]"}`}
+                    className={`h-[16px] w-[16px] sm:h-[18px] sm:w-[18px] ${liked ? "fill-[#C42A2E] text-[#C42A2E]" : "text-[#C42A2E]"}`}
                     strokeWidth={2}
                   />
                 </button>
 
                 <Link href={`/popular-product/${slug}`}>
-                  <p className="mt-[16px] text-[17px] font-bold text-[#1F2937] hover:underline">{name}</p>
+                  <p className="mt-[16px] text-[15px] font-bold text-[#1F2937] hover:underline sm:text-[16px] lg:text-[17px]">{name}</p>
                 </Link>
-                <p className="mt-[6px] text-[15px] text-[#4C545F]">{weight}</p>
+                <p className="mt-[6px] text-[13px] text-[#4C545F] sm:text-[14px] lg:text-[15px]">{weight}</p>
 
                 <div className="mt-[8px] flex items-center gap-[6px]">
                   {Array.from({ length: 5 }).map((_, idx) => (
                     <Star key={idx} className="h-[14px] w-[14px] fill-[#D89B4A] text-[#D89B4A]" />
                   ))}
-                  <span className="text-[14px] text-[#8F949B]">{rating} ({reviews})</span>
+                  <span className="text-[12px] text-[#8F949B] sm:text-[13px] lg:text-[14px]">{rating} ({reviews})</span>
                 </div>
 
                 <div className="mt-[14px] flex items-baseline gap-[6px]">
-                  <span className="text-[24px] font-extrabold text-[#1F2937]">{price}</span>
-                  <span className="text-[13px] text-[#8F949B]">MXN</span>
+                  <span className="text-[20px] font-extrabold text-[#1F2937] sm:text-[22px] lg:text-[24px]">{price}</span>
+                  <span className="text-[12px] text-[#8F949B] sm:text-[13px]">MXN</span>
                 </div>
 
                 <button
                   onClick={handleAddToCart}
-                  className="mt-[16px] rounded-[10px] bg-[#3F5632] py-[12px] text-[15px] font-semibold text-white"
+                  className="mt-[16px] rounded-[10px] bg-[#3F5632] py-[10px] text-[13px] font-semibold text-white sm:py-[12px] sm:text-[14px] lg:text-[15px]"
                 >
                   Add to cart
                 </button>
@@ -103,29 +107,29 @@ export default function Popular() {
         </div>
 
         {/* Today's deals — unchanged */}
-        <div className="rounded-[24px] bg-[#FCFAF5] p-[36px]">
-          <div className="flex items-start justify-between">
+        <div className="rounded-[24px] bg-[#FCFAF5] p-[20px] sm:p-[28px] ">
+          <div className="flex flex-wrap items-start justify-between gap-y-[12px]">
             <div>
-              <h2 className="text-[26px] font-extrabold text-[#1F2937]">
+              <h2 className="text-[20px] font-extrabold text-[#1F2937] sm:text-[22px] md:text-[24px] lg:text-[26px]">
                 Today&rsquo;s deals
               </h2>
-              <p className="mt-[8px] max-w-[380px] text-[15px] leading-[1.5] text-[#4C545F]">
+              <p className="mt-[8px] max-w-[380px] text-[14px] leading-[1.5] text-[#4C545F] sm:text-[15px]">
                 Lorem ipsum dolor sit amet consectetur. Ac lectus mattis.
               </p>
             </div>
-            <button className="flex shrink-0 items-center gap-2 text-[16px] font-semibold text-[#3E5730]">
+            <button className="flex shrink-0 items-center gap-2 text-[14px] font-semibold text-[#3E5730] sm:text-[15px] lg:text-[16px]">
               View All
-              <ArrowRight className="h-6 w-6" />
+              <ArrowRight className="h-5 w-5 sm:h-6 sm:w-6" />
             </button>
           </div>
 
-          <div className="relative mt-[28px] flex h-[280px] items-center overflow-hidden rounded-2xl bg-[#EBCFBF] px-[36px]">
-            <div className="relative z-10 max-w-[260px]">
-              <h3 className="text-[26px] font-extrabold leading-[1.2] text-[#1F2937]">
+          <div className="relative mt-[20px] flex h-[200px] items-center overflow-hidden rounded-2xl bg-[#EBCFBF] px-[20px] sm:h-[230px] sm:px-[28px] md:h-[260px] lg:h-[280px] lg:px-[36px] xl:mt-[28px]">
+            <div className="relative z-10 max-w-[60%] sm:max-w-[260px]">
+              <h3 className="text-[18px] font-extrabold leading-[1.2] text-[#1F2937] sm:text-[20px] md:text-[23px] lg:text-[26px]">
                 Up to 30% off on fresh produce
               </h3>
-              <p className="mt-[14px] text-[15px] text-[#4C545F]">Limited time offer</p>
-              <button className="mt-[20px] rounded-[10px] bg-[#BF6535] px-[24px] py-[12px] text-[15px] font-semibold text-white">
+              <p className="mt-[14px] text-[13px] text-[#4C545F] sm:text-[14px] lg:text-[15px]">Limited time offer</p>
+              <button className="mt-[20px] rounded-[10px] bg-[#BF6535] px-[18px] py-[10px] text-[13px] font-semibold text-white sm:px-[24px] sm:py-[12px] sm:text-[14px] lg:text-[15px]">
                 Shop Now
               </button>
             </div>
@@ -136,22 +140,30 @@ export default function Popular() {
             />
           </div>
 
-          <div className="mt-[20px] grid grid-cols-2 gap-[20px]">
-            <div className="relative flex h-[150px] items-end justify-end overflow-hidden rounded-2xl bg-[#F9F0EA]">
-              <Image src={berries} alt="Organic berries" className="relative h-[130px] w-auto object-contain" />
-              <div className="absolute inset-0 p-[20px]">
-                <span className="text-[16px] font-bold text-[#BF6535]">20% OFF</span>
-                <p className="mt-[18px] text-[22px] font-extrabold leading-[1.2] text-[#1F2937]">
+          <div className="mt-[16px] grid grid-cols-1 gap-[14px] sm:grid-cols-2 sm:gap-[16px] lg:gap-[20px] xl:mt-[20px]">
+            <div className="relative flex h-[130px] items-end justify-end overflow-hidden rounded-2xl bg-[#F9F0EA] sm:h-[140px] lg:h-[150px]">
+              <Image
+                src={berries}
+                alt="Organic berries"
+                className="relative h-[110px] w-auto object-contain sm:h-[120px] lg:h-[130px]"
+              />
+              <div className="absolute inset-0 p-[14px] sm:p-[16px] lg:p-[20px]">
+                <span className="text-[13px] font-bold text-[#BF6535] sm:text-[14px] lg:text-[16px]">20% OFF</span>
+                <p className="mt-[10px] text-[16px] font-extrabold leading-[1.2] text-[#1F2937] sm:mt-[14px] sm:text-[18px] lg:mt-[18px] lg:text-[22px]">
                   Organic <br />Berries
                 </p>
               </div>
             </div>
 
-            <div className="relative flex h-[150px] items-end justify-end overflow-hidden rounded-2xl bg-[#F9F0EA]">
-              <Image src={juices} alt="Cold-pressed juices" className="relative h-[150px] w-auto object-contain" />
-              <div className="absolute inset-0 p-[20px]">
-                <span className="text-[16px] font-bold text-[#BF6535]">20% OFF</span>
-                <p className="mt-[18px] text-[22px] font-extrabold leading-[1.2] text-[#1F2937]">
+            <div className="relative flex h-[130px] items-end justify-end overflow-hidden rounded-2xl bg-[#F9F0EA] sm:h-[140px] lg:h-[150px]">
+              <Image
+                src={juices}
+                alt="Cold-pressed juices"
+                className="relative h-[130px] w-auto object-contain sm:h-[140px] lg:h-[150px]"
+              />
+              <div className="absolute inset-0 p-[14px] sm:p-[16px] lg:p-[20px]">
+                <span className="text-[13px] font-bold text-[#BF6535] sm:text-[14px] lg:text-[16px]">20% OFF</span>
+                <p className="mt-[10px] text-[16px] font-extrabold leading-[1.2] text-[#1F2937] sm:mt-[14px] sm:text-[18px] lg:mt-[18px] lg:text-[22px]">
                   Cold-Pressed <br /> Juices
                 </p>
               </div>

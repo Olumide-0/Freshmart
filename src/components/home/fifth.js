@@ -40,9 +40,9 @@ const features = [
 export default function Fifth() {
   return (
     <div className=" w-full">
-        <section className="relative overflow-hidden bg-[#F5EEE2] px-6 py-20 md:py-28">
+        <section className="relative overflow-hidden bg-[#F5EEE2]  py-20 md:py-28">
       {/* Avocado — bottom left */}
-      <div className="pointer-events-none absolute -left-6 top-20 hidden w-40 md:block lg:w-52">
+      <div className="pointer-events-none absolute -left-6 top-28 hidden w-40 md:block lg:w-52">
         <Image
           src={avocado}
           alt=""
@@ -63,7 +63,7 @@ export default function Fifth() {
 
       {/* Heading */}
       <div className="relative z-10 mx-auto max-w-3xl text-center">
-        <h2 className="text-[64px] font-bold leading-tight tracking-tight ">
+        <h2 className="text-[32px] font-bold leading-tight tracking-tight sm:text-[40px] md:text-[52px] lg:text-[64px] ">
           <span className="text-[#3E5730]">Groceries, made fresh.</span>
           <br />
           <span className="text-[#1F2937]">Made simple</span>
@@ -71,11 +71,11 @@ export default function Fifth() {
       </div>
 
       {/* Feature cards */}
-      <div className="relative px-[122px]  mx-auto mt-14 grid  grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-6 md:gap-5">
+      <div className="relative px-[20px] sm:px-[40px] md:px-[64px]   mx-auto mt-14 grid  grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-6 md:gap-5">
         {features.map(({ icon: Icon, title, description }) => (
           <div
             key={title}
-            className="flex flex-col items-center rounded-[20px] border border-[#E4A94CD9] bg-white px-[19px] py-[28] text-center shadow-sm"
+            className="flex flex-col items-center rounded-[20px] border border-[#E4A94CD9] bg-white px-[19px] py-[28px] text-center shadow-sm"
           >
             <span className="mb-[18px] flex h-12 w-12 items-center justify-center rounded-full bg-[#3E5730]">
               <Icon className="h-8 w-8 text-white" strokeWidth={2} />
@@ -89,7 +89,7 @@ export default function Fifth() {
       </div>
     </section>
     <div>
-        <Image src={freshness} alt=""/>
+        <Image src={freshness} alt="" className="h-auto w-full" />
     </div>
     </div>
   )
