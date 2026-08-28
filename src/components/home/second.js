@@ -44,7 +44,7 @@ export default function Second() {
         </h2> 
         <button 
           onClick={() => setOpen(true)} 
-          className="flex items-center gap-2 text-[14px] bg-red-500 font-semibold text-[#3E5730] sm:text-[15px] lg:text-[16px] cursor-pointer" 
+          className="flex items-center gap-2 text-[14px]  font-semibold text-[#3E5730] sm:text-[15px] lg:text-[16px] cursor-pointer" 
         > 
           View All 
           <ArrowRight className="w-5 h-5 sm:w-6 sm:h-6" /> 

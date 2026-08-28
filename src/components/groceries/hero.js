@@ -54,7 +54,7 @@ const deals = [
 
 export default function Hero() {
   return (
-    <section className="bg-[#F5EEE2]  px-6 py-[20px] md:px-[122px] md:py-10">
+    <section className="bg-[#F5EEE2]  px-6 py-[20px] sm:px-[40px] sm:py-[24px] md:px-[64px] md:py-10 ">
       {/* Card container */}
       <div className="rounded-[28px] bg-[#F9F5EC] p-[20px] ">
         <div className="flex flex-col gap-10 lg:flex-row lg:items-center">
@@ -63,12 +63,12 @@ export default function Hero() {
             <p className="mb-3 text-[13px] font-extrabold tracking-wider text-[#C6672E]">
               TODAY&apos;S TOP DEALS
             </p>
-            <h1 className="text-[60px] font-bold leading-[1.05] tracking-tight">
+            <h1 className="text-[32px] font-bold leading-[1.05] tracking-tight sm:text-[40px] md:text-[48px] lg:text-[60px]">
               <span className="text-[#3E5730]">Fresh deals,</span>
               <br />
               <span className="text-[#1F2937]">you&apos;ll love</span>
             </h1>
-            <p className="mt-5 text-[#1F2937] text-[15px]">
+            <p className="mt-5 text-[#1F2937] text-[14px] sm:text-[15px]">
               Save more on your daily essentials today!
             </p>
             <button className="w-full mt-7 rounded-[11px] bg-[#3E5730]  py-[8px] font-semibold text-white transition hover:bg-[#33593D]">

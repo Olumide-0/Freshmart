@@ -21,9 +21,9 @@ export default function Categories() {
   };
 
   return (
-    <div className="bg-[#F6F0E3] px-[120px] py-[48px]">
+    <div className="bg-[#F6F0E3] px-[20px] py-[24px] sm:px-[40px] sm:py-[28px] md:px-[64px] md:py-[36px]  xl:py-[48px]">
       {toast && (
-        <div className="fixed right-[24px] top-[24px] z-[100] flex w-[360px] flex-col overflow-hidden rounded-[14px] bg-white shadow-xl">
+        <div className="fixed left-[16px] right-[16px] top-[16px] z-[100] flex w-auto flex-col overflow-hidden rounded-[14px] bg-white shadow-xl sm:left-auto sm:right-[24px] sm:top-[24px] sm:w-[360px]">
           <div className="flex items-center justify-between px-[20px] py-[18px]">
             <div className="flex items-center gap-[12px]">
               <span className="flex h-[28px] w-[28px] items-center justify-center rounded-full bg-[#3E5730]">
@@ -39,36 +39,36 @@ export default function Categories() {
         </div>
       )}
 
-      <div className="flex items-end justify-between">
+      <div className="flex flex-wrap items-end justify-between gap-y-[12px]">
         <div>
-          <h1 className="text-[26px] font-extrabold text-[#1F2937]">All categories</h1>
-          <p className="mt-[6px] text-[14px] text-gray-500">
+          <h1 className="text-[20px] font-extrabold text-[#1F2937] sm:text-[22px] md:text-[24px] lg:text-[26px]">All categories</h1>
+          <p className="mt-[6px] text-[13px] text-gray-500 sm:text-[14px]">
             Showing 1-{GROCERIES.length} of {GROCERIES.length} products
           </p>
         </div>
 
-        <div className="flex items-center gap-[10px] text-[14px]">
+        <div className="flex items-center gap-[10px] text-[13px] sm:text-[14px]">
           <span className="text-gray-600">Sort by:</span>
-          <button className="flex items-center gap-[10px] rounded-[8px] border border-gray-200 bg-white px-[16px] py-[10px] font-semibold text-[#1F2937]">
+          <button className="flex items-center gap-[10px] rounded-[8px] border border-gray-200 bg-white px-[12px] py-[8px] font-semibold text-[#1F2937] sm:px-[16px] sm:py-[10px]">
             Recommended
             <ChevronDown className="h-[16px] w-[16px]" strokeWidth={2} />
           </button>
         </div>
       </div>
 
-      <div className="mt-[24px] grid grid-cols-5 gap-[20px]">
+      <div className="mt-[20px] grid grid-cols-2 gap-[14px] sm:mt-[24px] sm:gap-[16px] md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 xl:gap-[20px]">
         {GROCERIES.map((product, i) => (
-          <div key={i} className="flex flex-col overflow-hidden rounded-[14px] bg-white">
+          <div key={i} className="relative flex flex-col overflow-hidden rounded-[14px] bg-white">
             <Link href={`/groceries/${product.slug}`} className="relative block aspect-square w-full">
               <Image
                 src={product.image}
                 alt={product.name}
                 fill
-                sizes="(max-width: 768px) 50vw, 20vw"
+                sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
                 className="object-cover"
               />
               {product.badge && (
-                <span className={`absolute bottom-[12px] left-[12px] rounded-full px-[12px] py-[4px] text-[12px] font-semibold ${BADGE_STYLES[product.badge]}`}>
+                <span className={`absolute bottom-[10px] left-[10px] rounded-full px-[10px] py-[3px] text-[11px] font-semibold sm:bottom-[12px] sm:left-[12px] sm:px-[12px] sm:py-[4px] sm:text-[12px] ${BADGE_STYLES[product.badge]}`}>
                   {product.badge}
                 </span>
               )}
@@ -82,9 +82,9 @@ export default function Categories() {
 
             <div className="flex flex-1 flex-col px-[16px] py-[16px]">
               <Link href={`/groceries/${product.slug}`}>
-                <h3 className="text-[16px] font-bold text-[#1F2937] hover:underline">{product.name}</h3>
+                <h3 className="text-[14px] font-bold text-[#1F2937] hover:underline sm:text-[15px] lg:text-[16px]">{product.name}</h3>
               </Link>
-              <p className="mt-[2px] text-[13px] text-gray-500">1g</p>
+              <p className="mt-[2px] text-[12px] text-gray-500 sm:text-[13px]">1g</p>
 
               <div className="mt-[6px] flex items-center gap-[6px]">
                 <div className="flex text-[#E3A008]">
@@ -92,17 +92,17 @@ export default function Categories() {
                     <Star key={idx} className="h-[13px] w-[13px]" fill="currentColor" strokeWidth={0} />
                   ))}
                 </div>
-                <span className="text-[13px] text-gray-500">4.9 (312)</span>
+                <span className="text-[12px] text-gray-500 sm:text-[13px]">4.9 (312)</span>
               </div>
 
               <div className="mt-[8px] flex items-baseline gap-[6px]">
-                <span className="text-[20px] font-extrabold text-[#1F2937]">${product.price}</span>
+                <span className="text-[17px] font-extrabold text-[#1F2937] sm:text-[18px] lg:text-[20px]">${product.price}</span>
                 <sup className="text-[10px] font-semibold text-[#1F2937]">MXN</sup>
               </div>
 
               <button
                 onClick={handleAddToCart}
-                className="mt-[14px] flex w-full items-center justify-center gap-[6px] rounded-[8px] bg-[#3E5730] py-[10px] text-[14px] font-semibold text-white"
+                className="mt-[14px] flex w-full items-center justify-center gap-[6px] rounded-[8px] bg-[#3E5730] py-[8px] text-[12px] font-semibold text-white sm:py-[10px] sm:text-[14px]"
               >
                 {product.cta === "add" ? (
                   <>
@@ -118,19 +118,19 @@ export default function Categories() {
         ))}
       </div>
 
-      <div className="mt-[40px] flex items-center justify-center gap-[8px]">
-        <button className="flex items-center gap-[6px] rounded-[8px] px-[14px] py-[10px] text-[14px] font-medium text-gray-400">
+      <div className="mt-[28px] flex items-center justify-start gap-[6px] overflow-x-auto sm:mt-[40px] sm:justify-center sm:gap-[8px] sm:overflow-visible">
+        <button className="flex shrink-0 items-center gap-[6px] rounded-[8px] px-[10px] py-[8px] text-[13px] font-medium text-gray-400 sm:px-[14px] sm:py-[10px] sm:text-[14px]">
           <ChevronLeft className="h-[16px] w-[16px]" strokeWidth={2} />
-          Previous
+          <span className="hidden sm:inline">Previous</span>
         </button>
-        <button className="flex h-[38px] w-[38px] items-center justify-center rounded-[8px] bg-[#3E5730] text-[14px] font-semibold text-white">1</button>
-        <button className="flex h-[38px] w-[38px] items-center justify-center rounded-[8px] text-[14px] font-medium text-[#1F2937]">2</button>
-        <button className="flex h-[38px] w-[38px] items-center justify-center rounded-[8px] text-[14px] font-medium text-[#1F2937]">3</button>
-        <span className="flex h-[38px] w-[38px] items-center justify-center text-[14px] text-gray-400">...</span>
-        <button className="flex h-[38px] w-[38px] items-center justify-center rounded-[8px] text-[14px] font-medium text-[#1F2937]">67</button>
-        <button className="flex h-[38px] w-[38px] items-center justify-center rounded-[8px] text-[14px] font-medium text-[#1F2937]">68</button>
-        <button className="flex items-center gap-[6px] rounded-[8px] px-[14px] py-[10px] text-[14px] font-medium text-[#1F2937]">
-          Next
+        <button className="flex h-[32px] w-[32px] shrink-0 items-center justify-center rounded-[8px] bg-[#3E5730] text-[13px] font-semibold text-white sm:h-[38px] sm:w-[38px] sm:text-[14px]">1</button>
+        <button className="flex h-[32px] w-[32px] shrink-0 items-center justify-center rounded-[8px] text-[13px] font-medium text-[#1F2937] sm:h-[38px] sm:w-[38px] sm:text-[14px]">2</button>
+        <button className="flex h-[32px] w-[32px] shrink-0 items-center justify-center rounded-[8px] text-[13px] font-medium text-[#1F2937] sm:h-[38px] sm:w-[38px] sm:text-[14px]">3</button>
+        <span className="flex h-[32px] w-[32px] shrink-0 items-center justify-center text-[13px] text-gray-400 sm:h-[38px] sm:w-[38px] sm:text-[14px]">...</span>
+        <button className="flex h-[32px] w-[32px] shrink-0 items-center justify-center rounded-[8px] text-[13px] font-medium text-[#1F2937] sm:h-[38px] sm:w-[38px] sm:text-[14px]">67</button>
+        <button className="flex h-[32px] w-[32px] shrink-0 items-center justify-center rounded-[8px] text-[13px] font-medium text-[#1F2937] sm:h-[38px] sm:w-[38px] sm:text-[14px]">68</button>
+        <button className="flex shrink-0 items-center gap-[6px] rounded-[8px] px-[10px] py-[8px] text-[13px] font-medium text-[#1F2937] sm:px-[14px] sm:py-[10px] sm:text-[14px]">
+          <span className="hidden sm:inline">Next</span>
           <ChevronRight className="h-[16px] w-[16px]" strokeWidth={2} />
         </button>
       </div>
