@@ -10,8 +10,8 @@ export default async function OccasionCategoryPage({ params }) {
   const items = OCCASION_PRODUCTS.filter((p) => p.occasion === slug);
 
   return (
-    <div className="w-full bg-[#F6F0E3] px-[120px] py-[24px]">
-      <div className="flex items-center gap-2 text-[13px] text-gray-500">
+     <div className="w-full bg-[#F6F0E3] px-[20px] py-[20px] sm:px-[40px] md:px-[64px]  xl:py-[24px]">
+      <div className="flex flex-wrap items-center gap-2 text-[12px] text-gray-500 sm:text-[13px]">
         <Link href="/" className="hover:text-gray-700">
           Home
         </Link>
