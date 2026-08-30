@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import {
   Leaf,
@@ -18,8 +18,9 @@ import {
 } from "lucide-react";
 import logo from "../assets/image/fresh mart logo.png"
 import bg from "../assets/image/image 49.png"
-
-
+import AuthFlow from "@/components/auth/AuthFlow";
+import { useAuthStore } from "@/store/useAuthStore";
+import { supabase } from "@/lib/supabaseClient";
 
 const TOP_BAR_ITEMS = [
   { icon: Leaf, label: "Free deliveries on orders over MXN $699" },
@@ -38,6 +39,21 @@ const NAV_LINKS = [
 export default function Navbar() {
   const [query, setQuery] = useState("");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [authOpen, setAuthOpen] = useState(false);
+
+  const user = useAuthStore((s) => s.user);
+  const setUser = useAuthStore((s) => s.setUser);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => setUser(data.user));
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+    return () => listener.subscription.unsubscribe();
+  }, [setUser]);
+
+  const displayName =
+    user?.user_metadata?.full_name || user?.email || user?.phone || "Sign Up/Log in";
 
   return (
     <header className="fixed inset-x-0 top-0 z-[100] w-full bg-white font-sans">
@@ -111,13 +127,13 @@ export default function Navbar() {
           </div>
 
           {/* Sign up / login */}
-          <a
-            href="#"
+          <button
+            onClick={() => (user ? null : setAuthOpen(true))}
             className="ml-auto flex shrink-0 items-center gap-[8px] text-[15px] font-medium text-[#1F2936] sm:ml-0"
           >
             <User className="h-[19px] w-[19px]" strokeWidth={1.75} />
-            <span className="hidden lg:inline">Sign Up/Log in</span>
-          </a>
+            <span className="hidden lg:inline">{displayName}</span>
+          </button>
 
           {/* Cart */}
           <button aria-label="Cart" className="shrink-0 text-[#1F2936]">
@@ -135,8 +151,8 @@ export default function Navbar() {
             </button>
             <nav className="flex flex-col gap-[14px]">
               {NAV_LINKS.map(({ label, href, hasDropdown }) => (
-                <a
-                  key={label}
+                
+                 <a key={label}
                   href={href}
                   className="flex items-center gap-[10px] text-[16px] font-bold text-[#1F2937]"
                 >
@@ -149,8 +165,8 @@ export default function Navbar() {
               <a href="#" className="text-[16px] font-bold text-[#1F2937]">
                 FAQs
               </a>
-              <a
-                href="#"
+              
+                <a href="#"
                 className="flex w-fit items-center gap-[10px] rounded-full border border-[#C7C9CD] bg-white py-[6px] pl-[6px] pr-[16px]"
               >
                 <span className="flex h-[30px] w-[30px] items-center justify-center rounded-full bg-[#C1652E]">
@@ -205,6 +221,8 @@ export default function Navbar() {
           </div>
         </div>
       </div>
+
+      {authOpen && <AuthFlow onClose={() => setAuthOpen(false)} />}
     </header>
   );
 }
