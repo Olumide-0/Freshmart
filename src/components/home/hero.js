@@ -46,7 +46,7 @@ export default function Hero() {
             <div className="flex flex-wrap items-center gap-x-[28px] gap-y-[16px] sm:gap-x-[40px] lg:flex-nowrap lg:gap-[56px]">
               {STATS.map(({ value, label, icon: Icon }) => (
                 <div key={label}>
-                  <div className="flex items-center gap-[6px] text-[18px] font-extrabold text-[#3E5730] sm:text-[22px] lg:text-[26px]">
+                  <div className="flex items-center gap-[6px] text-[14px] font-bold lg:font-extrabold text-[#3E5730] sm:text-[22px] lg:text-[26px]">
                     <span>{value}</span>
                     {Icon && (
                       <Icon
@@ -55,7 +55,7 @@ export default function Hero() {
                       />
                     )}
                   </div>
-                  <p className="mt-[4px] text-[13px] text-[#161D27] sm:text-[14px] lg:text-[16px]">
+                  <p className="mt-[4px] text-[12px] text-[#161D27] sm:text-[10px] lg:text-[16px]">
                     {label}
                   </p>
                 </div>
