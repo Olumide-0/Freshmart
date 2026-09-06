@@ -3,7 +3,14 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Heart, Star, Plus, ChevronRight, CheckCircle2, X } from "lucide-react";
+import {
+  Heart,
+  Star,
+  Plus,
+  ChevronRight,
+  CheckCircle2,
+  X,
+} from "lucide-react";
 import { FRESH_GROCERIES } from "@/data/freshGroceries";
 import { useCartStore } from "@/store/useCartStore";
 
@@ -52,8 +59,12 @@ export default function FreshGroceriesPage() {
         <Link href="/" className="hover:text-gray-700">
           Home
         </Link>
-        <ChevronRight className="h-[14px] w-[14px]" />
-        <span className="font-semibold text-[#C6672E]">Fresh groceries</span>
+
+        <ChevronRight className="h-3.5 w-3.5 shrink-0" />
+
+        <span className="font-semibold text-[#C6672E]">
+          Fresh groceries
+        </span>
       </div>
 
       <h1 className="mt-3 text-xl font-extrabold text-[#1F2937] sm:mt-[16px] sm:text-2xl md:text-[26px]">
@@ -107,6 +118,7 @@ export default function FreshGroceriesPage() {
                 <sup className="text-[9px] font-semibold text-[#1F2937] sm:text-[10px]">MXN</sup>
               </div>
 
+              {/* Add Button */}
               <button
                 onClick={() => handleAddToCart(product)}
                 className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-[8px] bg-[#3E5730] py-2 text-xs font-semibold text-white transition-colors hover:bg-[#324724] sm:mt-[14px] sm:gap-[6px] sm:py-[10px] sm:text-[14px]"
@@ -127,3 +139,4 @@ export default function FreshGroceriesPage() {
     </div>
   );
 }
+
