@@ -118,6 +118,7 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Heart, Star, Plus, CheckCircle2, X } from "lucide-react";
+import { useCartStore } from "@/store/useCartStore";
 
 const BADGE_STYLES = {
   "In season": "bg-[#E6F0E1] text-[#3E5730]",
@@ -127,8 +128,16 @@ const BADGE_STYLES = {
 
 export default function ProductGrid({ products, basePath = "/product" }) {
   const [toast, setToast] = useState(false);
+  const addItem = useCartStore((s) => s.addItem);
 
-  const handleAddToCart = () => {
+  const handleAddToCart = (product) => {
+    addItem({
+      id: product.slug,
+      name: product.name,
+      image: product.image,
+      price: product.price,
+      badge: product.badge,
+    });
     setToast(true);
     setTimeout(() => setToast(false), 2500);
   };
@@ -205,7 +214,7 @@ export default function ProductGrid({ products, basePath = "/product" }) {
               </div>
 
               <button
-                onClick={handleAddToCart}
+                onClick={() => handleAddToCart(product)}
                 className="mt-[14px] flex w-full items-center justify-center gap-[6px] rounded-[8px] bg-[#3E5730] py-[8px] text-[12px] font-semibold text-white sm:py-[10px] sm:text-[14px]"
               >
                 {product.cta === "add" ? (

@@ -20,15 +20,12 @@ export default function AuthFlow({ onClose }) {
     onClose();
   };
 
-  if (step === "auth") {
-    return <AuthModal onClose={onClose} onCodeSent={handleCodeSent} />;
-  }
-
   return (
-    <OtpModal
-      contact={contact}
-      onClose={onClose}
-      onVerified={handleVerified}
-    />
+    <>
+      {step === "auth" && <AuthModal onClose={onClose} onCodeSent={handleCodeSent} />}
+      {step === "otp" && (
+        <OtpModal contact={contact} onClose={onClose} onVerified={handleVerified} />
+      )}
+    </>
   );
 }
