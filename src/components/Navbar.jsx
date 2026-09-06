@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import {
   Leaf,
   Clock,
@@ -73,13 +74,15 @@ export default function Navbar() {
           </button>
 
           {/* Logo */}
-          <a href="#" className="flex shrink-0 items-center gap-[10px]">
-            <Image
+         
+          <Link href="/">
+                      <Image
               src={logo}
               alt="Logo"
               className="h-[44px] w-[65px] lg:h-[59px] lg:w-[87px]"
             />
-          </a>
+            </Link>
+        
 
           {/* Delivery address */}
           <button className="hidden shrink-0 items-center gap-[6px] text-[15px] font-medium text-[#1F2936] md:flex">
@@ -100,11 +103,11 @@ export default function Navbar() {
               aria-label="Voice search"
               className="mr-[6px] hidden h-[34px] w-[34px] items-center justify-center text-[#1F2936] sm:flex"
             >
-              <Mic className="h-[18px] w-[18px]" strokeWidth={1.75} />
+              <Mic className="h-[18px] w-[18px] cursor-pointer" strokeWidth={1.75} />
             </button>
             <button
               aria-label="Search"
-              className="flex h-[32px] w-[46px] shrink-0 items-center justify-center rounded-full bg-[#3F5632] text-white sm:h-[36px] sm:w-[52px]"
+              className="flex h-[32px] w-[46px] shrink-0 items-center justify-center cursor-pointer rounded-full bg-[#3F5632] text-white sm:h-[36px] sm:w-[52px]"
             >
               <Search className="h-[16px] w-[16px] sm:h-[17px] sm:w-[17px]" strokeWidth={2} />
             </button>
@@ -120,7 +123,7 @@ export default function Navbar() {
           </a>
 
           {/* Cart */}
-          <button aria-label="Cart" className="shrink-0 text-[#1F2936]">
+          <button aria-label="Cart" className="shrink-0 text-[#1F2936] cursor-pointer">
             <ShoppingCart className="h-[21px] w-[21px]" strokeWidth={1.75} />
           </button>
         </div>
