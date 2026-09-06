@@ -17,7 +17,7 @@ export default function PopularWeekDetailPage({ params }) {
 
   if (!product) {
     return (
-      <div className="w-full bg-[#F6F0E3] px-[20px] py-[24px] sm:px-[40px] md:px-[64px] lg:px-[96px] xl:px-[120px] xl:py-[48px]">
+      <div className="w-full bg-[#F6F0E3] px-[20px] py-[24px] sm:px-[40px] md:px-[64px]  xl:py-[48px]">
         <p className="text-gray-500">Product not found.</p>
       </div>
     );
@@ -27,7 +27,7 @@ export default function PopularWeekDetailPage({ params }) {
   const thumbnails = Array(4).fill(product.image);
 
   return (
-    <div className="w-full bg-[#F6F0E3] px-[20px] py-[20px] sm:px-[40px] md:px-[64px] lg:px-[96px] xl:px-[120px] xl:py-[24px]">
+    <div className="w-full bg-[#F6F0E3] px-[20px] py-[20px] sm:px-[40px] md:px-[64px]   xl:py-[24px]">
       <div className="flex flex-wrap items-center gap-2 text-[12px] text-gray-500 sm:text-[13px]">
         <Link href="/" className="hover:text-gray-700">Home</Link>
         <ChevronRight className="h-[14px] w-[14px]" />
