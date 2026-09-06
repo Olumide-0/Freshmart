@@ -12,6 +12,7 @@ import {
   X,
 } from "lucide-react";
 import { FRESH_GROCERIES } from "@/data/freshGroceries";
+import { useCartStore } from "@/store/useCartStore";
 
 const BADGE_STYLES = {
   "In season": "bg-[#E6F0E1] text-[#3E5730]",
@@ -21,50 +22,40 @@ const BADGE_STYLES = {
 
 export default function FreshGroceriesPage() {
   const [toast, setToast] = useState(false);
+  const addItem = useCartStore((s) => s.addItem);
 
-  const handleAddToCart = () => {
+  const handleAddToCart = (product) => {
+    addItem({
+      id: product.slug,
+      name: product.name,
+      image: product.image,
+      price: product.price,
+      badge: product.badge,
+    });
     setToast(true);
     setTimeout(() => setToast(false), 2500);
   };
 
   return (
-    <div className="w-full bg-[#F6F0E3] px-4 py-5 sm:px-8 md:px-12  xl:py-6">
-      {/* Toast */}
+    <div className="w-full bg-[#F6F0E3] px-4 py-6 sm:px-8 sm:py-8 md:px-12 lg:px-16 xl:px-[120px] xl:py-[24px]">
       {toast && (
-        <div className="fixed right-4 top-4 z-[100] flex w-[calc(100%-32px)] max-w-[360px] flex-col overflow-hidden rounded-[14px] bg-white shadow-xl sm:right-6 sm:top-6">
-          <div className="flex items-center justify-between px-4 py-4 sm:px-5 sm:py-[18px]">
-            <div className="flex min-w-0 items-center gap-2.5 sm:gap-3">
-              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#3E5730]">
-                <CheckCircle2
-                  className="h-4 w-4 text-white"
-                  strokeWidth={2.5}
-                  fill="none"
-                />
+        <div className="fixed left-4 right-4 top-4 z-[100] flex flex-col overflow-hidden rounded-[14px] bg-white shadow-xl sm:left-auto sm:right-[24px] sm:top-[24px] sm:w-[360px]">
+          <div className="flex items-center justify-between px-4 py-3.5 sm:px-[20px] sm:py-[18px]">
+            <div className="flex items-center gap-2.5 sm:gap-[12px]">
+              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#3E5730] sm:h-[28px] sm:w-[28px]">
+                <CheckCircle2 className="h-3.5 w-3.5 text-white sm:h-[16px] sm:w-[16px]" strokeWidth={2.5} fill="none" />
               </span>
-
-              <span className="truncate text-[15px] font-bold text-[#1F2937] sm:text-[17px]">
-                Added to cart
-              </span>
+              <span className="text-base font-bold text-[#1F2937] sm:text-[17px]">Added to cart</span>
             </div>
-
-            <button
-              onClick={() => setToast(false)}
-              aria-label="Close"
-              className="shrink-0"
-            >
-              <X
-                className="h-5 w-5 text-[#1F2937]"
-                strokeWidth={2}
-              />
+            <button onClick={() => setToast(false)} aria-label="Close">
+              <X className="h-5 w-5 text-[#1F2937]" strokeWidth={2} />
             </button>
           </div>
-
-          <div className="h-[6px] w-full bg-[#3E5730]" />
+          <div className="h-[5px] w-full bg-[#3E5730] sm:h-[6px]" />
         </div>
       )}
 
-      {/* Breadcrumb */}
-      <div className="flex flex-wrap items-center gap-1.5 text-[11px] text-gray-500 sm:gap-2 sm:text-[13px]">
+      <div className="flex items-center gap-2 text-[13px] text-gray-500">
         <Link href="/" className="hover:text-gray-700">
           Home
         </Link>
@@ -76,101 +67,65 @@ export default function FreshGroceriesPage() {
         </span>
       </div>
 
-      <h1 className="mt-4 text-[22px] font-extrabold text-[#1F2937] sm:mt-5 sm:text-[26px]">
+      <h1 className="mt-3 text-xl font-extrabold text-[#1F2937] sm:mt-[16px] sm:text-2xl md:text-[26px]">
         Fresh groceries
       </h1>
 
-      {/* Product Grid */}
-      <div className="mt-5 grid grid-cols-2 gap-3 sm:mt-6 sm:grid-cols-2 sm:gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 xl:gap-5">
+      <div className="mt-5 grid grid-cols-2 gap-3 sm:mt-6 sm:grid-cols-3 sm:gap-4 md:grid-cols-4 lg:grid-cols-5 lg:gap-[20px]">
         {FRESH_GROCERIES.map((product, i) => (
-          <div
-            key={i}
-            className="flex min-w-0 flex-col overflow-hidden rounded-[12px] bg-white sm:rounded-[14px]"
-          >
-            {/* Image */}
-            <div className="relative">
-              <Link
-                href={`/fresh-grocery-product/${product.slug}`}
-                className="relative block aspect-square w-full"
-              >
-                <Image
-                  src={product.image}
-                  alt={product.name}
-                  fill
-                  sizes="(max-width: 640px) 50vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, 20vw"
-                  className="object-cover"
-                />
+          <div key={i} className="relative flex flex-col overflow-hidden rounded-[14px] bg-white shadow-sm transition-shadow hover:shadow-md">
+            <Link href={`/fresh-grocery-product/${product.slug}`} className="relative block aspect-square w-full bg-gray-50">
+              <Image
+                src={product.image}
+                alt={product.name}
+                fill
+                sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
+                className="object-cover"
+              />
+              {product.badge && (
+                <span
+                  className={`absolute bottom-2 left-2 rounded-full px-2.5 py-0.5 text-[10px] font-semibold sm:bottom-[12px] sm:left-[12px] sm:px-[12px] sm:py-[4px] sm:text-[12px] ${BADGE_STYLES[product.badge]}`}
+                >
+                  {product.badge}
+                </span>
+              )}
+            </Link>
+            
+            <button
+              aria-label="Add to favorites"
+              className="absolute right-2 top-2 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-white shadow-sm hover:scale-105 sm:right-[12px] sm:top-[12px] sm:h-[32px] sm:w-[32px]"
+            >
+              <Heart className="h-3.5 w-3.5 text-[#C6672E] sm:h-[15px] sm:w-[15px]" strokeWidth={2} />
+            </button>
 
-                {product.badge && (
-                  <span
-                    className={`absolute bottom-2 left-2 rounded-full px-2.5 py-1 text-[10px] font-semibold sm:bottom-3 sm:left-3 sm:px-3 sm:py-1 sm:text-[12px] ${BADGE_STYLES[product.badge]}`}
-                  >
-                    {product.badge}
-                  </span>
-                )}
-              </Link>
-
-              {/* Heart */}
-              <button className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-white sm:right-3 sm:top-3">
-                <Heart
-                  className="h-[14px] w-[14px] text-[#C6672E] sm:h-[15px] sm:w-[15px]"
-                  strokeWidth={2}
-                />
-              </button>
-            </div>
-
-            {/* Product Info */}
-            <div className="flex flex-1 flex-col px-3 py-3 sm:px-4 sm:py-4">
+            <div className="flex flex-1 flex-col p-3 sm:p-4">
               <Link href={`/fresh-grocery-product/${product.slug}`}>
-                <h3 className="line-clamp-2 text-[14px] font-bold leading-[1.3] text-[#1F2937] hover:underline sm:text-[16px]">
-                  {product.name}
-                </h3>
+                <h3 className="line-clamp-1 text-sm font-bold text-[#1F2937] hover:underline sm:text-[16px]">{product.name}</h3>
               </Link>
+              <p className="mt-0.5 text-xs text-gray-500 sm:mt-[2px] sm:text-[13px]">1g</p>
 
-              <p className="mt-1 text-[11px] text-gray-500 sm:mt-[2px] sm:text-[13px]">
-                1g
-              </p>
-
-              {/* Rating */}
-              <div className="mt-1.5 flex flex-wrap items-center gap-1 sm:mt-[6px] sm:gap-[6px]">
-                <div className="flex shrink-0 text-[#E3A008]">
+              <div className="mt-1.5 flex items-center gap-1 sm:mt-[6px] sm:gap-[6px]">
+                <div className="flex text-[#E3A008]">
                   {Array.from({ length: 4 }).map((_, idx) => (
-                    <Star
-                      key={idx}
-                      className="h-3 w-3 sm:h-[13px] sm:w-[13px]"
-                      fill="currentColor"
-                      strokeWidth={0}
-                    />
+                    <Star key={idx} className="h-3 w-3 sm:h-[13px] sm:w-[13px]" fill="currentColor" strokeWidth={0} />
                   ))}
                 </div>
-
-                <span className="text-[10px] text-gray-500 sm:text-[13px]">
-                  4.9 (312)
-                </span>
+                <span className="text-[11px] text-gray-500 sm:text-[13px]">4.9 (312)</span>
               </div>
 
-              {/* Price */}
-              <div className="mt-2 flex flex-wrap items-baseline gap-1 sm:mt-2 sm:gap-[6px]">
-                <span className="text-[17px] font-extrabold text-[#1F2937] sm:text-[20px]">
-                  ${product.price}
-                </span>
-
-                <sup className="text-[8px] font-semibold text-[#1F2937] sm:text-[10px]">
-                  MXN
-                </sup>
+              <div className="mt-2 flex items-baseline gap-1 sm:mt-[8px] sm:gap-[6px]">
+                <span className="text-base font-extrabold text-[#1F2937] sm:text-[20px]">${product.price}</span>
+                <sup className="text-[9px] font-semibold text-[#1F2937] sm:text-[10px]">MXN</sup>
               </div>
 
               {/* Add Button */}
               <button
-                onClick={handleAddToCart}
-                className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-[8px] bg-[#3E5730] py-2.5 text-[12px] font-semibold text-white sm:mt-[14px] sm:py-[10px] sm:text-[14px]"
+                onClick={() => handleAddToCart(product)}
+                className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-[8px] bg-[#3E5730] py-2 text-xs font-semibold text-white transition-colors hover:bg-[#324724] sm:mt-[14px] sm:gap-[6px] sm:py-[10px] sm:text-[14px]"
               >
                 {product.cta === "add" ? (
                   <>
-                    <Plus
-                      className="h-3.5 w-3.5"
-                      strokeWidth={2.5}
-                    />
+                    <Plus className="h-3.5 w-3.5 sm:h-[14px] sm:w-[14px]" strokeWidth={2.5} />
                     Add
                   </>
                 ) : (

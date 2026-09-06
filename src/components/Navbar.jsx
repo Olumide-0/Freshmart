@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -16,12 +16,14 @@ import {
   Mail,
   Menu,
   X,
+  CheckCircle2,
 } from "lucide-react";
 import logo from "../assets/image/fresh mart logo.png"
 import bg from "../assets/image/image 49.png"
 import AuthFlow from "@/components/auth/AuthFlow";
+import CartPanel from "@/components/cart/CartPanel";
 import { useAuthStore } from "@/store/useAuthStore";
-import { supabase } from "@/lib/supabaseClient";
+import { useCartStore } from "@/store/useCartStore";
 
 const TOP_BAR_ITEMS = [
   { icon: Leaf, label: "Free deliveries on orders over MXN $699" },
@@ -41,20 +43,24 @@ export default function Navbar() {
   const [query, setQuery] = useState("");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
+  const [cartOpen, setCartOpen] = useState(false);
+  const [loginWarning, setLoginWarning] = useState(false);
 
   const user = useAuthStore((s) => s.user);
-  const setUser = useAuthStore((s) => s.setUser);
-
-  useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => setUser(data.user));
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-    });
-    return () => listener.subscription.unsubscribe();
-  }, [setUser]);
+  const items = useCartStore((s) => s.items);
+  const itemCount = items.reduce((sum, i) => sum + i.quantity, 0);
 
   const displayName =
     user?.user_metadata?.full_name || user?.email || user?.phone || "Sign Up/Log in";
+
+  const handleCartClick = () => {
+    if (!user) {
+      setLoginWarning(true);
+      setTimeout(() => setLoginWarning(false), 3000);
+      return;
+    }
+    setCartOpen(true);
+  };
 
   return (
     <header className="fixed inset-x-0 top-0 z-[100] w-full bg-white font-sans">
@@ -95,7 +101,7 @@ export default function Navbar() {
                       <Image
               src={logo}
               alt="Logo"
-              className="h-[44px] w-[65px] lg:h-[59px] lg:w-[87px]"
+              className="h-[44px] w-[68px] lg:h-[59px] lg:w-[87px]"
             />
             </Link>
         
@@ -139,12 +145,17 @@ export default function Navbar() {
           </button>
 
           {/* Cart */}
-          <button aria-label="Cart" className="shrink-0 text-[#1F2936] cursor-pointer">
+          <button aria-label="Cart" onClick={handleCartClick} className="relative shrink-0 text-[#1F2936]">
             <ShoppingCart className="h-[21px] w-[21px]" strokeWidth={1.75} />
+            {itemCount > 0 && (
+              <span className="absolute -right-[8px] -top-[8px] flex h-[18px] w-[18px] items-center justify-center rounded-full bg-[#C1652E] text-[11px] font-bold text-white">
+                {itemCount}
+              </span>
+            )}
           </button>
         </div>
 
-        {/* Mobile menu panel (nav links + items that are hidden on small screens) */}
+        {/* Mobile menu panel */}
         {mobileMenuOpen && (
           <div className="border-t border-[#EDEDED] bg-white px-[16px] py-[16px] lg:hidden">
             <button className="mb-[16px] flex items-center gap-[6px] text-[15px] font-medium text-[#1F2936] md:hidden">
@@ -155,7 +166,7 @@ export default function Navbar() {
             <nav className="flex flex-col gap-[14px]">
               {NAV_LINKS.map(({ label, href, hasDropdown }) => (
                 
-                 <a key={label}
+                <a  key={label}
                   href={href}
                   className="flex items-center gap-[10px] text-[16px] font-bold text-[#1F2937]"
                 >
@@ -193,7 +204,6 @@ export default function Navbar() {
         <div className="absolute inset-x-0 bottom-4 hidden max-w-[1440px] items-center justify-between mx-auto px-[24px] lg:bottom-8 lg:flex lg:px-[62px]">
           <nav className="flex items-center gap-[32px]">
             {NAV_LINKS.map(({ label, href, hasDropdown }) => (
-
               <a key={label}
                 href={href}
                 className="flex items-center gap-[21px] text-[16px] font-bold text-[#1F2937]"
@@ -226,6 +236,24 @@ export default function Navbar() {
       </div>
 
       {authOpen && <AuthFlow onClose={() => setAuthOpen(false)} />}
+      {cartOpen && <CartPanel onClose={() => setCartOpen(false)} />}
+
+      {loginWarning && (
+        <div className="fixed right-[24px] top-[24px] z-[300] w-[340px] rounded-[14px] bg-white px-[20px] py-[16px] shadow-xl">
+          <p className="text-[14px] font-semibold text-[#1F2937]">
+            Please sign up or log in to access your cart.
+          </p>
+          <button
+            onClick={() => {
+              setLoginWarning(false);
+              setAuthOpen(true);
+            }}
+            className="mt-[8px] text-[13px] font-semibold text-[#3E5730] underline"
+          >
+            Sign up / Log in
+          </button>
+        </div>
+      )}
     </header>
   );
 }

@@ -8,17 +8,26 @@ import produceBasket from "../../assets/image/image 74.png";
 import juices from "../../assets/image/image 77.png";
 import berries from "../../assets/image/image 79.png";
 import { POPULAR } from "@/data/popular";
+import { useCartStore } from "@/store/useCartStore";
 
 export default function Popular() {
   const [toast, setToast] = useState(false);
+  const addItem = useCartStore((s) => s.addItem);
 
-  const handleAddToCart = () => {
+  const handleAddToCart = (product) => {
+    addItem({
+      id: product.slug,
+      name: product.name,
+      image: product.image,
+      price: Number(product.price.replace(/[^0-9.]/g, "")),
+      badge: null,
+    });
     setToast(true);
     setTimeout(() => setToast(false), 2500);
   };
 
   return (
-    <div className="w-full bg-[#F6F0E3] px-[20px] py-[24px] sm:px-[40px] sm:py-[28px] md:px-[64px] md:py-[32px]  xl:py-[40px]">
+    <div className="w-full bg-[#F6F0E3] px-[20px] py-[24px] sm:px-[40px] sm:py-[28px] md:px-[64px] md:py-[32px] xl:px-[120px] xl:py-[40px]">
       {/* Toast */}
       {toast && (
         <div className="fixed left-[16px] right-[16px] top-[16px] z-[100] flex w-auto flex-col overflow-hidden rounded-[14px] bg-white shadow-xl sm:left-auto sm:right-[24px] sm:top-[24px] sm:w-[360px]">
@@ -39,7 +48,7 @@ export default function Popular() {
 
       <div className="grid grid-cols-1 gap-[20px] xl:grid-cols-2 xl:gap-[24px]">
         {/* Popular this week */}
-        <div className="rounded-[24px] bg-[#FCFAF5] p-[20px] sm:p-[28px] ">
+        <div className="rounded-[24px] bg-[#FCFAF5] p-[20px] sm:p-[28px] xl:p-[36px]">
           <div className="flex flex-wrap items-start justify-between gap-y-[12px]">
             <div>
               <h2 className="text-[20px] font-extrabold text-[#1F2937] sm:text-[22px] md:text-[24px] lg:text-[26px]">
@@ -59,12 +68,12 @@ export default function Popular() {
           </div>
 
           <div className="mt-[20px] grid grid-cols-1 gap-[16px] sm:grid-cols-2 sm:gap-[18px] lg:grid-cols-3 lg:gap-[8px] xl:mt-[28px]">
-            {POPULAR.map(({ name, weight, rating, reviews, price, image, liked, slug }, i) => (
+            {POPULAR.map((product, i) => (
               <div key={i} className="relative flex flex-col rounded-2xl bg-white p-[16px] shadow-sm">
-                <Link href={`/popular-product/${slug}`} className="relative block">
+                <Link href={`/popular-product/${product.slug}`} className="relative block">
                   <Image
-                    src={image}
-                    alt={name}
+                    src={product.image}
+                    alt={product.name}
                     className="h-[150px] w-full rounded-xl object-cover sm:h-[170px] lg:h-[190px]"
                   />
                 </Link>
@@ -73,30 +82,30 @@ export default function Popular() {
                   className="absolute right-[8px] top-[8px] flex h-[32px] w-[32px] items-center justify-center rounded-full bg-white shadow sm:h-[38px] sm:w-[38px]"
                 >
                   <Heart
-                    className={`h-[16px] w-[16px] sm:h-[18px] sm:w-[18px] ${liked ? "fill-[#C42A2E] text-[#C42A2E]" : "text-[#C42A2E]"}`}
+                    className={`h-[16px] w-[16px] sm:h-[18px] sm:w-[18px] ${product.liked ? "fill-[#C42A2E] text-[#C42A2E]" : "text-[#C42A2E]"}`}
                     strokeWidth={2}
                   />
                 </button>
 
-                <Link href={`/popular-product/${slug}`}>
-                  <p className="mt-[16px] text-[15px] font-bold text-[#1F2937] hover:underline sm:text-[16px] lg:text-[17px]">{name}</p>
+                <Link href={`/popular-product/${product.slug}`}>
+                  <p className="mt-[16px] text-[15px] font-bold text-[#1F2937] hover:underline sm:text-[16px] lg:text-[17px]">{product.name}</p>
                 </Link>
-                <p className="mt-[6px] text-[13px] text-[#4C545F] sm:text-[14px] lg:text-[15px]">{weight}</p>
+                <p className="mt-[6px] text-[13px] text-[#4C545F] sm:text-[14px] lg:text-[15px]">{product.weight}</p>
 
                 <div className="mt-[8px] flex items-center gap-[6px]">
                   {Array.from({ length: 5 }).map((_, idx) => (
                     <Star key={idx} className="h-[14px] w-[14px] fill-[#D89B4A] text-[#D89B4A]" />
                   ))}
-                  <span className="text-[12px] text-[#8F949B] sm:text-[13px] lg:text-[14px]">{rating} ({reviews})</span>
+                  <span className="text-[12px] text-[#8F949B] sm:text-[13px] lg:text-[14px]">{product.rating} ({product.reviews})</span>
                 </div>
 
                 <div className="mt-[14px] flex items-baseline gap-[6px]">
-                  <span className="text-[20px] font-extrabold text-[#1F2937] sm:text-[22px] lg:text-[24px]">{price}</span>
+                  <span className="text-[20px] font-extrabold text-[#1F2937] sm:text-[22px] lg:text-[24px]">{product.price}</span>
                   <span className="text-[12px] text-[#8F949B] sm:text-[13px]">MXN</span>
                 </div>
 
                 <button
-                  onClick={handleAddToCart}
+                  onClick={() => handleAddToCart(product)}
                   className="mt-[16px] rounded-[10px] bg-[#3F5632] py-[10px] text-[13px] font-semibold text-white sm:py-[12px] sm:text-[14px] lg:text-[15px]"
                 >
                   Add to cart
@@ -106,8 +115,8 @@ export default function Popular() {
           </div>
         </div>
 
-        {/* Today's deals — unchanged */}
-        <div className="rounded-[24px] bg-[#FCFAF5] p-[20px] sm:p-[28px] ">
+        {/* Today's deals */}
+        <div className="rounded-[24px] bg-[#FCFAF5] p-[20px] sm:p-[28px] xl:p-[36px]">
           <div className="flex flex-wrap items-start justify-between gap-y-[12px]">
             <div>
               <h2 className="text-[20px] font-extrabold text-[#1F2937] sm:text-[22px] md:text-[24px] lg:text-[26px]">
