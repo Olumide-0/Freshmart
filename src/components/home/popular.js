@@ -27,7 +27,7 @@ export default function Popular() {
   };
 
   return (
-    <div className="w-full bg-[#F6F0E3] px-[20px] py-[24px] sm:px-[40px] sm:py-[28px] md:px-[64px] md:py-[32px] xl:px-[120px] xl:py-[40px]">
+    <div className="w-full bg-[#F6F0E3] px-[20px] py-[24px] sm:px-[40px] sm:py-[28px] md:px-[64px] md:py-[32px] xl:px-[70px] xl:py-[40px]">
       {/* Toast */}
       {toast && (
         <div className="fixed left-[16px] right-[16px] top-[16px] z-[100] flex w-auto flex-col overflow-hidden rounded-[14px] bg-white shadow-xl sm:left-auto sm:right-[24px] sm:top-[24px] sm:w-[360px]">
@@ -55,7 +55,7 @@ export default function Popular() {
                 Popular this week
               </h2>
               <p className="mt-[8px] max-w-[420px] text-[14px] leading-[1.5] text-[#4C545F] sm:text-[15px]">
-                What other shoppers are adding to their carts right now.
+                What other shoppers are adding to their carts <br/> right now.
               </p>
             </div>
             <Link

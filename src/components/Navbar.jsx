@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -39,12 +40,31 @@ const NAV_LINKS = [
   { label: "Help & Support", href: "#" },
 ];
 
+// Voice search language options — default is English (US)
+const VOICE_LANGUAGES = [
+  { code: "en-US", label: "English" },
+  { code: "es-MX", label: "Español (MX)" },
+  { code: "fr-FR", label: "Français" },
+  { code: "pt-BR", label: "Português" },
+  { code: "de-DE", label: "Deutsch" },
+];
+
 export default function Navbar() {
+  const router = useRouter();
   const [query, setQuery] = useState("");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
   const [loginWarning, setLoginWarning] = useState(false);
+
+  // --- Voice search state ---
+  const [isListening, setIsListening] = useState(false);
+  const [voiceSupported, setVoiceSupported] = useState(true);
+  const [voiceLang, setVoiceLang] = useState("en-US"); // default: English
+  const [langMenuOpen, setLangMenuOpen] = useState(false);
+  const [isTranslating, setIsTranslating] = useState(false);
+  const recognitionRef = useRef(null);
+  const submitOnEndRef = useRef(false); // whether to auto-search once recognition ends
 
   const user = useAuthStore((s) => s.user);
   const items = useCartStore((s) => s.items);
@@ -61,6 +81,126 @@ export default function Navbar() {
     }
     setCartOpen(true);
   };
+
+  // --- Search handler — pushes to /search?q=... which reads from data/product.js ---
+  const handleSearch = (searchTerm) => {
+    const term = (searchTerm ?? query).trim();
+    if (!term) return;
+    router.push(`/search?q=${encodeURIComponent(term)}`);
+  };
+
+  // --- Translates non-English transcripts to English before searching ---
+  const translateAndSearch = async (text, lang) => {
+    const langPrefix = lang.split("-")[0];
+    if (langPrefix === "en" || !text.trim()) {
+      handleSearch(text);
+      return;
+    }
+
+    setIsTranslating(true);
+    try {
+      const res = await fetch("/api/translate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text, sourceLang: lang }),
+      });
+      const data = await res.json();
+      const translated = data?.translatedText || text;
+
+      setQuery(translated); // update the input so the user sees what was searched
+      handleSearch(translated);
+    } catch (err) {
+      console.error("Translate-and-search failed:", err);
+      handleSearch(text); // fall back to original transcript
+    } finally {
+      setIsTranslating(false);
+    }
+  };
+
+  // --- Set up SpeechRecognition, recreated whenever the language changes ---
+  useEffect(() => {
+    const SpeechRecognition =
+      typeof window !== "undefined" &&
+      (window.SpeechRecognition || window.webkitSpeechRecognition);
+
+    if (!SpeechRecognition) {
+      setVoiceSupported(false);
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.continuous = false;
+    recognition.interimResults = true;
+    recognition.lang = voiceLang;
+
+    recognition.onstart = () => setIsListening(true);
+
+    recognition.onresult = (event) => {
+      let transcript = "";
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        transcript += event.results[i][0].transcript;
+      }
+      setQuery(transcript);
+    };
+
+    recognition.onerror = (event) => {
+      // "no-speech" and "aborted" are expected, not real failures — don't log them as errors
+      if (event.error !== "no-speech" && event.error !== "aborted") {
+        console.error("Speech recognition error:", event.error);
+      }
+      setIsListening(false);
+      submitOnEndRef.current = false;
+    };
+
+    recognition.onend = () => {
+      setIsListening(false);
+      if (submitOnEndRef.current) {
+        submitOnEndRef.current = false;
+        setQuery((current) => {
+          if (current.trim()) translateAndSearch(current, voiceLang);
+          return current;
+        });
+      }
+    };
+
+    recognitionRef.current = recognition;
+
+    return () => {
+      recognition.onresult = null;
+      recognition.onend = null;
+      recognition.onerror = null;
+      recognition.stop();
+      recognitionRef.current = null;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [voiceLang]);
+
+  const handleMicClick = () => {
+    if (!voiceSupported) {
+      alert("Voice search isn't supported in this browser. Try Chrome or Edge.");
+      return;
+    }
+
+    const recognition = recognitionRef.current;
+    if (!recognition) return;
+
+    if (isListening) {
+      submitOnEndRef.current = false;
+      recognition.stop();
+    } else {
+      setQuery("");
+      submitOnEndRef.current = true; // auto-search once speech finishes
+      try {
+        recognition.start();
+      } catch (err) {
+        // start() throws if called while already active — ignore
+        console.warn(err);
+      }
+    }
+  };
+
+  const selectedLangLabel =
+    VOICE_LANGUAGES.find((l) => l.code === voiceLang)?.label ?? "English";
 
   return (
     <header className="fixed inset-x-0 top-0 z-[100] w-full bg-white font-sans">
@@ -96,15 +236,13 @@ export default function Navbar() {
           </button>
 
           {/* Logo */}
-         
           <Link href="/">
-                      <Image
+            <Image
               src={logo}
               alt="Logo"
               className="h-[44px] w-[68px] lg:h-[59px] lg:w-[87px]"
             />
-            </Link>
-        
+          </Link>
 
           {/* Delivery address */}
           <button className="hidden shrink-0 items-center gap-[6px] text-[15px] font-medium text-[#1F2936] md:flex">
@@ -114,21 +252,76 @@ export default function Navbar() {
           </button>
 
           {/* Search bar */}
-          <div className="order-last flex h-[42px] w-full items-center rounded-full border border-[#D8DADD] pl-[16px] pr-[6px] sm:order-none sm:h-[46px] sm:flex-1 sm:pl-[20px]">
+          <div className="relative order-last flex h-[42px] w-full items-center rounded-full border border-[#D8DADD] pl-[16px] pr-[6px] sm:order-none sm:h-[46px] sm:flex-1 sm:pl-[20px]">
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="What are you looking for today?"
-              className="h-full flex-1 bg-transparent text-[13px] text-[#1F2936] placeholder:text-[#94989F] focus:outline-none sm:text-[14px]"
+              onKeyDown={(e) => {
+                if (e.key === "Enter") handleSearch();
+              }}
+              disabled={isTranslating}
+              placeholder={
+                isListening
+                  ? "Listening..."
+                  : isTranslating
+                  ? "Translating..."
+                  : "What are you looking for today?"
+              }
+              className="h-full flex-1 bg-transparent text-[13px] text-[#1F2936] placeholder:text-[#94989F] focus:outline-none disabled:opacity-60 sm:text-[14px]"
             />
+
+            {/* Language picker for voice search */}
+            <div className="relative hidden sm:block">
+              <button
+                type="button"
+                aria-label="Voice search language"
+                onClick={() => setLangMenuOpen((open) => !open)}
+                className="mr-[4px] flex h-[34px] items-center gap-[3px] rounded-full px-[6px] text-[11px] font-medium text-[#6B7280] hover:bg-[#F4F4F5]"
+              >
+                {selectedLangLabel}
+                <ChevronDown className="h-[12px] w-[12px]" strokeWidth={2} />
+              </button>
+
+              {langMenuOpen && (
+                <div className="absolute right-0 top-[40px] z-[110] w-[160px] overflow-hidden rounded-[12px] border border-[#EDEDED] bg-white py-[6px] shadow-lg">
+                  {VOICE_LANGUAGES.map(({ code, label }) => (
+                    <button
+                      key={code}
+                      type="button"
+                      onClick={() => {
+                        setVoiceLang(code);
+                        setLangMenuOpen(false);
+                      }}
+                      className={`flex w-full items-center justify-between px-[14px] py-[8px] text-left text-[13px] hover:bg-[#F4F4F5] ${
+                        code === voiceLang ? "font-semibold text-[#3F5632]" : "text-[#1F2936]"
+                      }`}
+                    >
+                      {label}
+                      {code === voiceLang && (
+                        <CheckCircle2 className="h-[14px] w-[14px] text-[#3F5632]" strokeWidth={2} />
+                      )}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
             <button
-              aria-label="Voice search"
-              className="mr-[6px] hidden h-[34px] w-[34px] items-center justify-center text-[#1F2936] sm:flex"
+              type="button"
+              aria-label={isListening ? "Stop voice search" : "Voice search"}
+              onClick={handleMicClick}
+              className={`mr-[6px] hidden h-[34px] w-[34px] items-center justify-center rounded-full transition-colors sm:flex ${
+                isListening ? "bg-red-100 text-red-600" : "text-[#1F2936]"
+              }`}
             >
-              <Mic className="h-[18px] w-[18px] cursor-pointer" strokeWidth={1.75} />
+              <Mic
+                className={`h-[18px] w-[18px] cursor-pointer ${isListening ? "animate-pulse" : ""}`}
+                strokeWidth={1.75}
+              />
             </button>
             <button
               aria-label="Search"
+              onClick={() => handleSearch()}
               className="flex h-[32px] w-[46px] shrink-0 items-center justify-center cursor-pointer rounded-full bg-[#3F5632] text-white sm:h-[36px] sm:w-[52px]"
             >
               <Search className="h-[16px] w-[16px] sm:h-[17px] sm:w-[17px]" strokeWidth={2} />
@@ -165,8 +358,7 @@ export default function Navbar() {
             </button>
             <nav className="flex flex-col gap-[14px]">
               {NAV_LINKS.map(({ label, href, hasDropdown }) => (
-                
-                <a  key={label}
+                <a key={label}
                   href={href}
                   className="flex items-center gap-[10px] text-[16px] font-bold text-[#1F2937]"
                 >
@@ -179,8 +371,7 @@ export default function Navbar() {
               <a href="#" className="text-[16px] font-bold text-[#1F2937]">
                 FAQs
               </a>
-              
-                <a href="#"
+              <a href="#"
                 className="flex w-fit items-center gap-[10px] rounded-full border border-[#C7C9CD] bg-white py-[6px] pl-[6px] pr-[16px]"
               >
                 <span className="flex h-[30px] w-[30px] items-center justify-center rounded-full bg-[#C1652E]">

@@ -22,8 +22,11 @@ const BADGE_STYLES = {
   "Off season": "bg-[#FBE9D9] text-[#C6672E]",
 };
 
+const PAGE_SIZE = 15;
+
 export default function Categories() {
   const [toast, setToast] = useState(false);
+  const [page, setPage] = useState(1);
   const addItem = useCartStore((s) => s.addItem);
 
   const handleAddToCart = (product) => {
@@ -36,6 +39,30 @@ export default function Categories() {
     });
     setToast(true);
     setTimeout(() => setToast(false), 2500);
+  };
+
+  const totalPages = Math.max(1, Math.ceil(PRODUCTS.length / PAGE_SIZE));
+  const startIndex = (page - 1) * PAGE_SIZE;
+  const endIndex = Math.min(startIndex + PAGE_SIZE, PRODUCTS.length);
+  const visibleProducts = PRODUCTS.slice(startIndex, endIndex);
+
+  const goToPage = (p) => {
+    const clamped = Math.max(1, Math.min(totalPages, p));
+    setPage(clamped);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const getPageNumbers = () => {
+    const pages = [];
+    const showRange = 1;
+    for (let i = 1; i <= totalPages; i++) {
+      if (i === 1 || i === totalPages || (i >= page - showRange && i <= page + showRange)) {
+        pages.push(i);
+      } else if (pages[pages.length - 1] !== "...") {
+        pages.push("...");
+      }
+    }
+    return pages;
   };
 
   return (
@@ -71,7 +98,7 @@ export default function Categories() {
             All categories
           </h1>
           <p className="mt-1 sm:mt-[6px] text-xs sm:text-[14px] text-gray-500">
-            Showing 1-{PRODUCTS.length} of {PRODUCTS.length} products
+            Showing {startIndex + 1}-{endIndex} of {PRODUCTS.length} products
           </p>
         </div>
 
@@ -86,7 +113,7 @@ export default function Categories() {
 
       {/* Responsive Product Grid */}
       <div className="mt-5 sm:mt-[24px] grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4 md:gap-[20px]">
-        {PRODUCTS.map((product, i) => (
+        {visibleProducts.map((product, i) => (
           <div
             key={i}
             className="relative flex flex-col overflow-hidden rounded-[14px] bg-white transition-shadow hover:shadow-md"
@@ -182,31 +209,47 @@ export default function Categories() {
 
       {/* Responsive Pagination */}
       <div className="mt-8 sm:mt-[40px] flex items-center justify-center gap-1 sm:gap-[8px]">
-        <button className="flex items-center gap-1 sm:gap-[6px] rounded-[8px] px-2 sm:px-[14px] py-2 sm:py-[10px] text-xs sm:text-[14px] font-medium text-gray-400 hover:text-gray-600">
+        <button
+          onClick={() => goToPage(page - 1)}
+          disabled={page === 1}
+          className={`flex items-center gap-1 sm:gap-[6px] rounded-[8px] px-2 sm:px-[14px] py-2 sm:py-[10px] text-xs sm:text-[14px] font-medium ${
+            page === 1 ? "text-gray-400" : "text-gray-600 hover:text-gray-800"
+          }`}
+        >
           <ChevronLeft className="h-4 w-4" strokeWidth={2} />
           <span className="hidden sm:inline">Previous</span>
         </button>
 
-        <button className="flex h-8 w-8 sm:h-[38px] sm:w-[38px] items-center justify-center rounded-[8px] bg-[#3E5730] text-xs sm:text-[14px] font-semibold text-white">
-          1
-        </button>
-        <button className="flex h-8 w-8 sm:h-[38px] sm:w-[38px] items-center justify-center rounded-[8px] text-xs sm:text-[14px] font-medium text-[#1F2937] hover:bg-black/5">
-          2
-        </button>
-        <button className="flex h-8 w-8 sm:h-[38px] sm:w-[38px] items-center justify-center rounded-[8px] text-xs sm:text-[14px] font-medium text-[#1F2937] hover:bg-black/5">
-          3
-        </button>
-        <span className="flex h-8 w-8 sm:h-[38px] sm:w-[38px] items-center justify-center text-xs sm:text-[14px] text-gray-400">
-          ...
-        </span>
-        <button className="hidden xs:flex h-8 w-8 sm:h-[38px] sm:w-[38px] items-center justify-center rounded-[8px] text-xs sm:text-[14px] font-medium text-[#1F2937] hover:bg-black/5">
-          67
-        </button>
-        <button className="flex h-8 w-8 sm:h-[38px] sm:w-[38px] items-center justify-center rounded-[8px] text-xs sm:text-[14px] font-medium text-[#1F2937] hover:bg-black/5">
-          68
-        </button>
+        {getPageNumbers().map((p, i) =>
+          p === "..." ? (
+            <span
+              key={`ellipsis-${i}`}
+              className="flex h-8 w-8 sm:h-[38px] sm:w-[38px] items-center justify-center text-xs sm:text-[14px] text-gray-400"
+            >
+              ...
+            </span>
+          ) : (
+            <button
+              key={p}
+              onClick={() => goToPage(p)}
+              className={`flex h-8 w-8 sm:h-[38px] sm:w-[38px] items-center justify-center rounded-[8px] text-xs sm:text-[14px] font-semibold ${
+                page === p
+                  ? "bg-[#3E5730] text-white"
+                  : "text-[#1F2937] hover:bg-black/5"
+              }`}
+            >
+              {p}
+            </button>
+          )
+        )}
 
-        <button className="flex items-center gap-1 sm:gap-[6px] rounded-[8px] px-2 sm:px-[14px] py-2 sm:py-[10px] text-xs sm:text-[14px] font-medium text-[#1F2937] hover:bg-black/5">
+        <button
+          onClick={() => goToPage(page + 1)}
+          disabled={page === totalPages}
+          className={`flex items-center gap-1 sm:gap-[6px] rounded-[8px] px-2 sm:px-[14px] py-2 sm:py-[10px] text-xs sm:text-[14px] font-medium ${
+            page === totalPages ? "text-gray-400" : "text-[#1F2937] hover:bg-black/5"
+          }`}
+        >
           <span className="hidden sm:inline">Next</span>
           <ChevronRight className="h-4 w-4" strokeWidth={2} />
         </button>
