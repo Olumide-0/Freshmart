@@ -55,7 +55,7 @@ export default function Popular() {
                 Popular this week
               </h2>
               <p className="mt-[8px] max-w-[420px] text-[14px] leading-[1.5] text-[#4C545F] sm:text-[15px]">
-                What other shoppers are adding to their carts right now.
+                What other shoppers are adding to their carts <br/> right now.
               </p>
             </div>
             <Link

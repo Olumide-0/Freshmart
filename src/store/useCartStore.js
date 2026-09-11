@@ -1,15 +1,15 @@
 import { create } from "zustand";
 
 export const useCartStore = create((set) => ({
-  items: [], // { id, name, image, price, badge, description, rating, reviews, sizes, selectedSize, quantity }
+  items: [],
 
-  addItem: (product) =>
+  addItem: (product, quantity = 1) =>
     set((state) => {
       const existing = state.items.find((i) => i.id === product.id);
       if (existing) {
         return {
           items: state.items.map((i) =>
-            i.id === product.id ? { ...i, quantity: i.quantity + 1 } : i
+            i.id === product.id ? { ...i, quantity: i.quantity + quantity } : i
           ),
         };
       }
@@ -29,7 +29,7 @@ export const useCartStore = create((set) => ({
             reviews: product.reviews ?? 312,
             sizes: product.sizes ?? ["500g", "1 Kg", "5kg", "Custom"],
             selectedSize: product.selectedSize ?? "1 Kg",
-            quantity: 1,
+            quantity,
           },
         ],
       };
