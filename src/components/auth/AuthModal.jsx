@@ -7,6 +7,8 @@ import Image from "next/image";
 import apple from "../../assets/image/image 98.png"
 import grape from "../../assets/image/image 95 (1).png"
 
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 export default function AuthModal({ onClose, onCodeSent }) {
   const [tab, setTab] = useState("email");
   const [loading, setLoading] = useState(false);
@@ -31,12 +33,25 @@ export default function AuthModal({ onClose, onCodeSent }) {
           ? "Email is required"
           : "Phone number is required";
       }
-      if (tab === "email" && !value.includes("@")) {
-        return "Enter a valid email";
+
+      if (tab === "email") {
+        if (!EMAIL_REGEX.test(value.trim())) {
+          return "Enter a valid email address (e.g. name@example.com)";
+        }
       }
-      if (tab === "phone" && value.length < 10) {
-        return "Enter a valid phone number";
+
+      if (tab === "phone") {
+        if (!/^\d+$/.test(value)) {
+          return "Only numbers are allowed";
+        }
+        if (value.length < 10) {
+          return "Phone number must be at least 10 digits";
+        }
+        if (value.length > 15) {
+          return "Phone number is too long";
+        }
       }
+
       return true;
     },
   });
@@ -57,7 +72,7 @@ export default function AuthModal({ onClose, onCodeSent }) {
     await new Promise((resolve) => setTimeout(resolve, 600)); // simulate network delay
     setLoading(false);
 
-    onCodeSent({ type: tab, value: data.contact });
+    onCodeSent({ type: tab, value: data.contact.trim() });
   };
 
   const handleGoogle = () => {
