@@ -1,13 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import { useImperativeHandle, useState, forwardRef } from "react";
 
 
 
 
 import { ChevronDown, ChevronRight } from "lucide-react";
 
-export default function DeliveryForm({ onFormChange, paymentMethod, setPaymentMethod, setPaymentOpen }) {
+const DeliveryForm = forwardRef(function DeliveryForm(
+    {
+        onFormChange,
+        paymentMethod,
+        setPaymentMethod,
+        setPaymentOpen,
+    },
+    ref
+) {
     const [formData, setFormData] = useState({
         fullName: "",
         contactInfo: "",
@@ -20,8 +28,54 @@ export default function DeliveryForm({ onFormChange, paymentMethod, setPaymentMe
     });
 
 
+    const [errors, setErrors] = useState({});
 
 
+    const validateForm = () => {
+        const newErrors = {};
+
+        if (!formData.fullName.trim()) {
+            newErrors.fullName = "Full name is required";
+        }
+
+        if (!formData.contactInfo.trim()) {
+            newErrors.contactInfo = "Email or phone number is required";
+        } else {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            const phoneRegex = /^[0-9+\-\s()]{7,}$/;
+
+            if (
+                !emailRegex.test(formData.contactInfo) &&
+                !phoneRegex.test(formData.contactInfo)
+            ) {
+                newErrors.contactInfo = "Enter a valid email or phone number";
+            }
+        }
+
+        if (!formData.address1.trim()) {
+            newErrors.address1 = "Address is required";
+        }
+
+        if (!formData.city.trim()) {
+            newErrors.city = "City is required";
+        }
+
+      const postalCodeRegex = /^[A-Za-z0-9\s-]{3,10}$/;
+
+if (!formData.postalCode.trim()) {
+    newErrors.postalCode = "Postal code is required";
+} else if (!postalCodeRegex.test(formData.postalCode.trim())) {
+    newErrors.postalCode = "Enter a valid postal code";
+}
+
+        setErrors(newErrors);
+
+        return Object.keys(newErrors).length === 0;
+    };
+
+    useImperativeHandle(ref, () => ({
+    validateForm,
+}));
 
 
     const handleChange = (e) => {
@@ -33,6 +87,10 @@ export default function DeliveryForm({ onFormChange, paymentMethod, setPaymentMe
         };
 
         setFormData(updatedData);
+        setErrors((prev) => ({
+    ...prev,
+    [name]: "",
+}));
         onFormChange(updatedData);
     };
 
@@ -65,6 +123,9 @@ export default function DeliveryForm({ onFormChange, paymentMethod, setPaymentMe
                             onChange={handleChange}
                             className="w-full rounded-[8px] border border-gray-200 p-[12px] outline-none"
                         />
+                        {errors.fullName && (
+    <p className="text-sm text-red-500">{errors.fullName}</p>
+)}
                     </div>
 
                     {/* Contact Info */}
@@ -85,6 +146,9 @@ export default function DeliveryForm({ onFormChange, paymentMethod, setPaymentMe
                             onChange={handleChange}
                             className="w-full rounded-[8px] border border-gray-200 p-[12px] outline-none"
                         />
+                        {errors.contactInfo && (
+    <p className="text-sm text-red-500">{errors.contactInfo}</p>
+)}
                     </div>
 
                     {/* Address Line 1 */}
@@ -105,6 +169,9 @@ export default function DeliveryForm({ onFormChange, paymentMethod, setPaymentMe
                             onChange={handleChange}
                             className="w-full rounded-[8px] border border-gray-200 p-[12px] outline-none"
                         />
+                        {errors.address1 && (
+    <p className="text-sm text-red-500">{errors.address1}</p>
+)}
                     </div>
 
                     {/* Address Line 2 */}
@@ -149,6 +216,9 @@ export default function DeliveryForm({ onFormChange, paymentMethod, setPaymentMe
                                 onChange={handleChange}
                                 className="w-full rounded-[8px] border border-gray-200 p-[12px] outline-none"
                             />
+                            {errors.city && (
+    <p className="text-sm text-red-500">{errors.city}</p>
+)}
                         </div>
 
                         <div className="flex w-full flex-col gap-[6px]">
@@ -168,6 +238,9 @@ export default function DeliveryForm({ onFormChange, paymentMethod, setPaymentMe
                                 onChange={handleChange}
                                 className="w-full rounded-[8px] border border-gray-200 p-[12px] outline-none"
                             />
+                            {errors.postalCode && (
+    <p className="text-sm text-red-500">{errors.postalCode}</p>
+)}
                         </div>
                     </div>
 
@@ -265,7 +338,11 @@ export default function DeliveryForm({ onFormChange, paymentMethod, setPaymentMe
 
                 <button
                     type="button"
-                    onClick={() => setPaymentOpen(true)}
+                    onClick={() => {
+                        if (validateForm()) {
+                            setPaymentOpen(true);
+                        }
+                    }}
                     className="mt-[20px] flex w-full items-center justify-between rounded-[8px] border border-gray-200 bg-white px-[24px] py-[12px]"
                 >
                     <p className="text-left text-[14px] text-gray-500">
@@ -282,4 +359,6 @@ export default function DeliveryForm({ onFormChange, paymentMethod, setPaymentMe
 
         </div>
     );
-}
+})
+
+export default DeliveryForm;

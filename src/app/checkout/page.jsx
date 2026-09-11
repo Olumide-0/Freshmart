@@ -3,7 +3,7 @@
 
 import { useCartStore } from "@/store/useCartStore";
 import { useOrderStore } from "@/store/useOrderStore";
-import { useState } from "react";
+import { useState , useRef} from "react";
 
 import { Check, LockKeyhole } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -42,6 +42,8 @@ const clearCart = useCartStore((state) => state.clearCart);
   (total, item) => total + item.quantity * 6,
   0
 );
+
+const deliveryFormRef = useRef(null);
 
 // const [deliveryData, setDeliveryData] = useState({});
 // const [paymentMethod, setPaymentMethod] = useState("");
@@ -166,11 +168,13 @@ const tax = 0;
 
         {/* Delivery form */}
         <div className="w-full flex-1">
-          <DeliveryForm  onFormChange={setDeliveryData}
-          paymentMethod={paymentMethod}
-          setPaymentMethod={setPaymentMethod}
-          setPaymentOpen={setPaymentOpen}
-          />
+         <DeliveryForm
+    ref={deliveryFormRef}
+    onFormChange={setDeliveryData}
+    paymentMethod={paymentMethod}
+    setPaymentMethod={setPaymentMethod}
+    setPaymentOpen={setPaymentOpen}
+/>
         </div>
 
         {/* Basket summary */}
@@ -181,7 +185,11 @@ const tax = 0;
             isCheckout={true}
             deliveryFee={deliveryFee}
             tax={tax}
-            onContinueToPayment={() => setPaymentOpen(true)}
+          onContinueToPayment={() => {
+    if (deliveryFormRef.current?.validateForm()) {
+        setPaymentOpen(true);
+    }
+}}
           />
 
         </div>
