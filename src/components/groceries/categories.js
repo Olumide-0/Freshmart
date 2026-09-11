@@ -66,7 +66,7 @@ export default function Categories() {
   };
 
   return (
-    <div className="bg-[#F6F0E3] px-4 sm:px-6 md:px-12 lg:px-16 xl:px-[120px] py-6 sm:py-8 md:py-[48px]">
+    <div className="bg-[#F6F0E3] px-4 sm:px-6 md:px-12 lg:px-16  py-6 sm:py-8 md:py-[48px]">
       {/* Toast Notification */}
       {toast && (
         <div className="fixed right-4 top-4 sm:right-6 sm:top-6 z-[100] flex w-[calc(100vw-32px)] sm:w-[360px] flex-col overflow-hidden rounded-[14px] bg-white shadow-xl transition-all">
