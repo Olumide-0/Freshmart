@@ -306,7 +306,7 @@ export default function CardDetailsModal({
 
   return (
     <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/40 px-[20px]">
-      <div className="relative w-full max-w-[420px] rounded-[12px] bg-[#FFFFFF] p-[24px]">
+      <div className="relative w-full max-w-[520px] rounded-[12px] bg-[#FFFFFF] p-[24px]">
 
         {/* Close */}
         <button
