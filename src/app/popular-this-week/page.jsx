@@ -30,7 +30,7 @@ export default function PopularThisWeekPage() {
   };
 
   return (
-    <div className="w-full bg-[#F6F0E3] px-4 py-6 sm:px-8 sm:py-8 md:px-12 lg:px-16 xl:px-[120px] xl:py-[24px]">
+    <div className="w-full bg-[#F6F0E3] px-4 py-6 sm:px-8 sm:py-8 md:px-12 lg:px-16  xl:py-[24px]">
       {toast && (
         <div className="fixed left-4 right-4 top-4 z-[100] flex flex-col overflow-hidden rounded-[14px] bg-white shadow-xl sm:left-auto sm:right-[24px] sm:top-[24px] sm:w-[360px]">
           <div className="flex items-center justify-between px-4 py-3.5 sm:px-[20px] sm:py-[18px]">
