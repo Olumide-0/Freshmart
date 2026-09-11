@@ -27,7 +27,7 @@ export default function Popular() {
   };
 
   return (
-    <div className="w-full bg-[#F6F0E3] px-[20px] py-[24px] sm:px-[40px] sm:py-[28px] md:px-[64px] md:py-[32px] xl:px-[120px] xl:py-[40px]">
+    <div className="w-full bg-[#F6F0E3] px-[20px] py-[24px] sm:px-[40px] sm:py-[28px] md:px-[64px] md:py-[32px]  xl:py-[40px]">
       {/* Toast */}
       {toast && (
         <div className="fixed left-[16px] right-[16px] top-[16px] z-[100] flex w-auto flex-col overflow-hidden rounded-[14px] bg-white shadow-xl sm:left-auto sm:right-[24px] sm:top-[24px] sm:w-[360px]">
@@ -68,45 +68,73 @@ export default function Popular() {
           </div>
 
           <div className="mt-[20px] grid grid-cols-1 gap-[16px] sm:grid-cols-2 sm:gap-[18px] lg:grid-cols-3 lg:gap-[8px] xl:mt-[28px]">
+
+
             {POPULAR.map((product, i) => (
-              <div key={i} className="relative flex flex-col rounded-2xl bg-white p-[16px] shadow-sm">
-                <Link href={`/popular-product/${product.slug}`} className="relative block">
+              <div
+                key={i}
+                className="relative flex h-full flex-col rounded-2xl bg-white p-[16px] shadow-sm"
+              >
+                <Link
+                  href={`/popular-product/${product.slug}`}
+                  className="relative block"
+                >
                   <Image
                     src={product.image}
                     alt={product.name}
                     className="h-[150px] w-full rounded-xl object-cover sm:h-[170px] lg:h-[190px]"
                   />
                 </Link>
+
                 <button
                   aria-label="Favorite"
                   className="absolute right-[8px] top-[8px] flex h-[32px] w-[32px] items-center justify-center rounded-full bg-white shadow sm:h-[38px] sm:w-[38px]"
                 >
                   <Heart
-                    className={`h-[16px] w-[16px] sm:h-[18px] sm:w-[18px] ${product.liked ? "fill-[#C42A2E] text-[#C42A2E]" : "text-[#C42A2E]"}`}
+                    className={`h-[16px] w-[16px] sm:h-[18px] sm:w-[18px] ${product.liked
+                        ? "fill-[#C42A2E] text-[#C42A2E]"
+                        : "text-[#C42A2E]"
+                      }`}
                     strokeWidth={2}
                   />
                 </button>
 
                 <Link href={`/popular-product/${product.slug}`}>
-                  <p className="mt-[16px] text-[15px] font-bold text-[#1F2937] hover:underline sm:text-[16px] lg:text-[17px]">{product.name}</p>
+                  <p className="mt-[16px] text-[15px] font-bold text-[#1F2937] hover:underline sm:text-[16px] lg:text-[17px]">
+                    {product.name}
+                  </p>
                 </Link>
-                <p className="mt-[6px] text-[13px] text-[#4C545F] sm:text-[14px] lg:text-[15px]">{product.weight}</p>
+
+                <p className="mt-[6px] text-[13px] text-[#4C545F] sm:text-[14px] lg:text-[15px]">
+                  {product.weight}
+                </p>
 
                 <div className="mt-[8px] flex items-center gap-[6px]">
                   {Array.from({ length: 5 }).map((_, idx) => (
-                    <Star key={idx} className="h-[14px] w-[14px] fill-[#D89B4A] text-[#D89B4A]" />
+                    <Star
+                      key={idx}
+                      className="h-[14px] w-[14px] fill-[#D89B4A] text-[#D89B4A]"
+                    />
                   ))}
-                  <span className="text-[12px] text-[#8F949B] sm:text-[13px] lg:text-[14px]">{product.rating} ({product.reviews})</span>
+
+                  <span className="text-[12px] text-[#8F949B] sm:text-[13px] lg:text-[14px]">
+                    {product.rating} ({product.reviews})
+                  </span>
                 </div>
 
                 <div className="mt-[14px] flex items-baseline gap-[6px]">
-                  <span className="text-[20px] font-extrabold text-[#1F2937] sm:text-[22px] lg:text-[24px]">{product.price}</span>
-                  <span className="text-[12px] text-[#8F949B] sm:text-[13px]">MXN</span>
+                  <span className="text-[20px] font-extrabold text-[#1F2937] sm:text-[22px] lg:text-[24px]">
+                    {product.price}
+                  </span>
+
+                  <span className="text-[12px] text-[#8F949B] sm:text-[13px]">
+                    MXN
+                  </span>
                 </div>
 
                 <button
                   onClick={() => handleAddToCart(product)}
-                  className="mt-[16px] rounded-[10px] bg-[#3F5632] py-[10px] text-[13px] font-semibold text-white sm:py-[12px] sm:text-[14px] lg:text-[15px]"
+                  className="mt-auto rounded-[10px] bg-[#3F5632] py-[10px] text-[13px] font-semibold text-white sm:py-[12px] sm:text-[14px] lg:text-[15px]"
                 >
                   Add to cart
                 </button>
