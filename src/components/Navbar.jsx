@@ -18,6 +18,7 @@ import {
   Menu,
   X,
   CheckCircle2,
+  LogOut,
 } from "lucide-react";
 import logo from "../assets/image/fresh mart logo.png"
 import bg from "../assets/image/image 49.png"
@@ -56,6 +57,9 @@ export default function Navbar() {
   const [authOpen, setAuthOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
   const [loginWarning, setLoginWarning] = useState(false);
+  const [accountMenuOpen, setAccountMenuOpen] = useState(false);
+  const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
+  const accountMenuRef = useRef(null);
 
   // --- Voice search state ---
   const [isListening, setIsListening] = useState(false);
@@ -67,7 +71,9 @@ export default function Navbar() {
   const submitOnEndRef = useRef(false); // whether to auto-search once recognition ends
 
   const user = useAuthStore((s) => s.user);
+  const clearUser = useAuthStore((s) => s.clearUser);
   const items = useCartStore((s) => s.items);
+  const clearCart = useCartStore((s) => s.clearCart);
   const itemCount = items.reduce((sum, i) => sum + i.quantity, 0);
 
   const displayName =
@@ -81,6 +87,41 @@ export default function Navbar() {
     }
     setCartOpen(true);
   };
+
+  const handleAccountClick = () => {
+    if (!user) {
+      setAuthOpen(true);
+      return;
+    }
+    setAccountMenuOpen((open) => !open);
+  };
+
+  // Opens the confirmation modal instead of logging out immediately
+  const handleLogoutClick = () => {
+    setAccountMenuOpen(false); // close the dropdown so it's not sitting behind the modal
+    setMobileMenuOpen(false);
+    setLogoutConfirmOpen(true);
+  };
+
+  // Actually performs the logout — only called after the user confirms
+  const confirmLogout = () => {
+    clearUser();
+    clearCart(); // cart is per-account; clear it on sign-out so the next user starts fresh
+    setLogoutConfirmOpen(false);
+    router.push("/");
+  };
+
+  // Close the account dropdown on outside click
+  useEffect(() => {
+    if (!accountMenuOpen) return;
+    const handleClickOutside = (e) => {
+      if (accountMenuRef.current && !accountMenuRef.current.contains(e.target)) {
+        setAccountMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [accountMenuOpen]);
 
   // --- Search handler — pushes to /search?q=... which reads from data/product.js ---
   const handleSearch = (searchTerm) => {
@@ -328,14 +369,42 @@ export default function Navbar() {
             </button>
           </div>
 
-          {/* Sign up / login */}
-          <button
-            onClick={() => (user ? null : setAuthOpen(true))}
-            className="ml-auto flex shrink-0 items-center gap-[8px] text-[15px] font-medium text-[#1F2936] sm:ml-0"
-          >
-            <User className="h-[19px] w-[19px]" strokeWidth={1.75} />
-            <span className="hidden lg:inline">{displayName}</span>
-          </button>
+          {/* Sign up / login / account menu */}
+          <div className="relative ml-auto shrink-0 sm:ml-0" ref={accountMenuRef}>
+            <button
+              onClick={handleAccountClick}
+              className="flex items-center gap-[8px] text-[15px] font-medium text-[#1F2936]"
+            >
+              <User className="h-[19px] w-[19px]" strokeWidth={1.75} />
+              <span className="hidden lg:inline">{displayName}</span>
+              {user && (
+                <ChevronDown
+                  className={`hidden h-[14px] w-[14px] transition-transform lg:inline ${
+                    accountMenuOpen ? "rotate-180" : ""
+                  }`}
+                  strokeWidth={2}
+                />
+              )}
+            </button>
+
+            {user && accountMenuOpen && (
+              <div className="absolute right-0 top-[calc(100%+10px)] z-[110] w-[200px] overflow-hidden rounded-[12px] border border-[#EDEDED] bg-white py-[8px] shadow-lg">
+                <div className="border-b border-gray-100 px-[16px] py-[10px]">
+                  <p className="truncate text-[14px] font-semibold text-[#1F2937]">{displayName}</p>
+                  {(user.email || user.phone) && (
+                    <p className="truncate text-[12px] text-gray-500">{user.email || user.phone}</p>
+                  )}
+                </div>
+                <button
+                  onClick={handleLogoutClick}
+                  className="flex w-full items-center gap-[10px] px-[16px] py-[10px] text-left text-[14px] font-semibold text-red-600 hover:bg-red-50"
+                >
+                  <LogOut className="h-[16px] w-[16px]" strokeWidth={2} />
+                  Log out
+                </button>
+              </div>
+            )}
+          </div>
 
           {/* Cart */}
           <button aria-label="Cart" onClick={handleCartClick} className="relative shrink-0 text-[#1F2936]">
@@ -381,6 +450,15 @@ export default function Navbar() {
                   Email Support
                 </span>
               </a>
+              {user && (
+                <button
+                  onClick={handleLogoutClick}
+                  className="flex items-center gap-[10px] text-[16px] font-bold text-red-600"
+                >
+                  <LogOut className="h-[16px] w-[16px]" strokeWidth={2} />
+                  Log out
+                </button>
+              )}
             </nav>
           </div>
         )}
@@ -443,6 +521,50 @@ export default function Navbar() {
           >
             Sign up / Log in
           </button>
+        </div>
+      )}
+
+      {/* Logout confirmation modal */}
+      {logoutConfirmOpen && (
+        <div className="fixed inset-0 z-[400] flex items-center justify-center bg-black/40 px-[16px]">
+          <div className="w-full max-w-[460px]  rounded-[16px] bg-white px-[24px] p-[28px] text-center shadow-xl">
+            <p className="text-[20px] font-bold text-[#1F2937]">
+              Are you sure you want to log out?
+            </p>
+
+            <div className="mt-[20px] flex flex-col gap-[10px]">
+              <button
+                onClick={confirmLogout}
+                className="w-full rounded-[8px] bg-[#3F5632] py-[10px] text-[14px] font-semibold text-white"
+              >
+                Yes
+              </button>
+
+              <button
+                onClick={() => setLogoutConfirmOpen(false)}
+                className="flex w-full items-center justify-center gap-[8px] rounded-[8px] border border-[#D8DADD] py-[10px] text-[14px] font-semibold text-[#1F2936]"
+              >
+                <svg
+                  className="h-[18px] w-[18px]"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <circle cx="12" cy="12" r="10" fill="#FFD93B" />
+                  <circle cx="8.5" cy="10" r="1.3" fill="#3F3F3F" />
+                  <circle cx="15.5" cy="10" r="1.3" fill="#3F3F3F" />
+                  <path
+                    d="M7.5 14.2C8.7 16 10.2 17 12 17c1.8 0 3.3-1 4.5-2.8"
+                    stroke="#3F3F3F"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    fill="none"
+                  />
+                </svg>
+                No, I'm joking
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </header>
