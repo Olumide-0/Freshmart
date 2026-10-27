@@ -2,9 +2,6 @@
 
 import { useImperativeHandle, useState, forwardRef } from "react";
 
-
-
-
 import { ChevronDown, ChevronRight } from "lucide-react";
 
 const DeliveryForm = forwardRef(function DeliveryForm(
@@ -331,7 +328,7 @@ if (!formData.postalCode.trim()) {
             </div>
 
             {/* Payment Method */}
-            <div className="rounded-[8px] bg-white p-[20px] sm:p-[24px]">
+            {/* <div className="rounded-[8px] bg-white p-[20px] sm:p-[24px]">
                 <h2 className="text-left text-[18px] font-extrabold text-[#1F2937]">
                     Payment Method
                 </h2>
@@ -354,7 +351,7 @@ if (!formData.postalCode.trim()) {
                         className="shrink-0 text-gray-500"
                     />
                 </button>
-            </div>
+            </div> */}
 
 
         </div>
