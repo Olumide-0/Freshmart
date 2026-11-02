@@ -1,6 +1,9 @@
 import { create } from "zustand";
+import { persist, createJSONStorage } from "zustand/middleware";
 
-export const useOrderStore = create((set) => ({
+export const useOrderStore = create(
+  persist(
+    (set) => ({
   deliveryData: {},
   paymentMethod: "",
   orderNumber: "",
@@ -10,6 +13,8 @@ export const useOrderStore = create((set) => ({
   orderItems: [],
   orderSubtotal: 0,
   orderTotalWeight: 0,
+  orderTip: 0,
+  orderPlacedAt: 0,
 
   setDeliveryData: (data) => set({ deliveryData: data }),
 
@@ -26,4 +31,17 @@ export const useOrderStore = create((set) => ({
   setOrderSubtotal: (amount) => set({ orderSubtotal: amount }),
 
   setOrderTotalWeight: (weight) => set({ orderTotalWeight: weight }),
-}));
+
+  setOrderTip: (amount) => set({ orderTip: amount }),
+
+  setOrderPlacedAt: (timestamp) => set({ orderPlacedAt: timestamp }),
+    }),
+    {
+      name: "order-storage",
+      storage: createJSONStorage(() => sessionStorage),
+      // Rehydrated manually on the client (see confirmation page) so the
+      // server render and first client render match.
+      skipHydration: true,
+    }
+  )
+);

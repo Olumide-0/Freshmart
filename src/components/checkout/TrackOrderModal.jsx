@@ -1,15 +1,175 @@
 "use client";
 
 import { X, MapPin, Plus, Minus, LocateFixed, MessageCircle, Phone, Truck, Check, Circle } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { useOrderStore } from "@/store/useOrderStore";
+import { getTrackingState, STAGE_OFFSETS_MS } from "@/lib/trackingDemo";
+
+// The route drawn in the SVG below (viewBox 0 0 500 300) as its three cubic
+// Bézier segments. Keep in sync with the <path d="..."> if the route changes.
+const ROUTE_SEGMENTS = [
+  [[100, 245], [130, 225], [160, 210], [205, 195]],
+  [[205, 195], [250, 180], [290, 160], [330, 145]],
+  [[330, 145], [370, 125], [400, 105], [420, 80]],
+];
+
+const bezierPoint = ([p0, p1, p2, p3], t) => {
+  const u = 1 - t;
+  return [0, 1].map(
+    (axis) =>
+      u * u * u * p0[axis] +
+      3 * u * u * t * p1[axis] +
+      3 * u * t * t * p2[axis] +
+      t * t * t * p3[axis]
+  );
+};
+
+// Points sampled along the route with their running length, so equal
+// progress means equal distance along the line (even truck speed).
+const ROUTE_SAMPLES = (() => {
+  const samples = [];
+  let length = 0;
+  let previous = null;
+
+  ROUTE_SEGMENTS.forEach((segment) => {
+    for (let step = 0; step <= 50; step++) {
+      const point = bezierPoint(segment, step / 50);
+      if (previous) {
+        length += Math.hypot(point[0] - previous[0], point[1] - previous[1]);
+      }
+      samples.push({ point, length });
+      previous = point;
+    }
+  });
+
+  return samples;
+})();
+
+const ROUTE_LENGTH = ROUTE_SAMPLES[ROUTE_SAMPLES.length - 1].length;
+
+// Point on the route for progress 0-1, as percentages of the map box.
+function getRoutePosition(progress) {
+  const target = Math.min(1, Math.max(0, progress)) * ROUTE_LENGTH;
+  const index = ROUTE_SAMPLES.findIndex((sample) => sample.length >= target);
+  const next = ROUTE_SAMPLES[index];
+  const prev = ROUTE_SAMPLES[Math.max(0, index - 1)];
+  const span = next.length - prev.length;
+  const t = span > 0 ? (target - prev.length) / span : 0;
+
+  return {
+    left: ((prev.point[0] + (next.point[0] - prev.point[0]) * t) / 500) * 100,
+    top: ((prev.point[1] + (next.point[1] - prev.point[1]) * t) / 300) * 100,
+  };
+}
+
+// Discrete zoom steps for the map drawing layer (100% to 200%).
+const ZOOM_CLASSES = ["scale-100", "scale-125", "scale-150", "scale-175", "scale-200"];
+
+const TIMELINE_STEPS = [
+  {
+    title: "Order Confirmed",
+    description: "Your order has been received and verified by FreshMart",
+  },
+  {
+    title: "Preparing Your Items",
+    description: "Fresh items are being hand-picked and safely packed",
+  },
+  {
+    title: "Out for Delivery",
+    description: "Carlos Rodriguez is on his way to your nearest spot with your basket",
+  },
+  {
+    title: "Delivered",
+    description: "Securely received and left at your doorstep",
+  },
+];
+
+// Class strings copied unchanged from the original done / current / pending steps.
+const STEP_STYLES = {
+  done: {
+    badge: "z-10 flex h-5 w-5 items-center justify-center rounded-full bg-[#E7F1E3]",
+    title: "text-[10px] font-semibold text-gray-800",
+    time: "text-[8px] text-gray-400",
+    description: "mt-0.5 text-[8px] text-gray-500",
+  },
+  current: {
+    badge: "z-10 flex h-5 w-5 items-center justify-center rounded-full border-2 border-[#3E5730] bg-[#3E5730]",
+    title: "text-[10px] font-bold text-[#3E5730]",
+    time: "text-[8px] text-[#3E5730]",
+    description: "mt-0.5 text-[8px] text-gray-600",
+  },
+  pending: {
+    badge: "z-10 flex h-5 w-5 items-center justify-center rounded-full border border-gray-300 bg-white",
+    title: "text-[10px] font-medium text-gray-400",
+    time: "text-[8px] text-gray-400",
+    description: "mt-0.5 text-[8px] text-gray-400",
+  },
+};
+
+const STEP_ICONS = {
+  done: <Check className="h-3 w-3 text-[#3E5730]" />,
+  current: <Circle className="h-2 w-2 fill-white text-white" />,
+  pending: <Circle className="h-2 w-2 fill-gray-300 text-gray-300" />,
+};
+
+const CONNECTOR_DONE = "absolute top-5 h-9 w-[2px] bg-[#6D9A5A]";
+const CONNECTOR_PENDING = "absolute top-5 h-9 w-[2px] border-l border-dashed border-gray-300";
+
+const formatClock = (timestamp) =>
+  new Date(timestamp).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+
+const formatRemaining = (seconds) =>
+  `${Math.floor(seconds / 60)} min ${String(seconds % 60).padStart(2, "0")} sec remaining`;
 
 
 export default function TrackOrderModal({ onClose }) {
 
   const orderNumber = useOrderStore((state) => state.orderNumber)
   const deliveryData = useOrderStore((state) => state.deliveryData)
+  const orderPlacedAt = useOrderStore((state) => state.orderPlacedAt)
+
+  // { startedAt, now }; set only from timer callbacks, never during render.
+  const [clock, setClock] = useState(null);
+  const [zoomStep, setZoomStep] = useState(0);
+
+  useEffect(() => {
+    // Older orders saved before orderPlacedAt existed start when the modal opens.
+    const startedAt = orderPlacedAt || Date.now();
+    let intervalId;
+
+    const tick = () => {
+      const now = Date.now();
+      setClock({ startedAt, now });
+
+      if (getTrackingState(now - startedAt).isDelivered) {
+        clearInterval(intervalId);
+      }
+    };
+
+    const firstTickId = setTimeout(tick, 0);
+    intervalId = setInterval(tick, 1000);
+
+    return () => {
+      clearTimeout(firstTickId);
+      clearInterval(intervalId);
+    };
+  }, [orderPlacedAt]);
+
+  // Wait for the first tick so the truck appears in place instead of sliding there.
+  if (!clock) {
+    return null;
+  }
+
+  const tracking = getTrackingState(clock.now - clock.startedAt);
+  const truckPosition = getRoutePosition(tracking.routeProgress);
+  const isOutForDelivery = tracking.stageIndex >= 2 && !tracking.isDelivered;
+
+  const getStepState = (index) => {
+    if (tracking.isDelivered || index < tracking.stageIndex) return "done";
+    return index === tracking.stageIndex ? "current" : "pending";
+  };
+
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4">
       <div className="relative w-full max-w-5xl overflow-hidden rounded-[24px] bg-white shadow-xl">
@@ -33,6 +193,8 @@ export default function TrackOrderModal({ onClose }) {
         <div className="grid gap-3 px-6 py-5 lg:grid-cols-[1.05fr_0.95fr]">
           {/* LEFT - MAP */}
           <div className="relative h-[300px] overflow-hidden rounded-[16px] bg-[#eef1ec]">
+            {/* Map drawing layer: the only part that zooms */}
+            <div className={`absolute inset-0 transition-transform duration-300 ${ZOOM_CLASSES[zoomStep]}`}>
             {/* Fake map background */}
             <div className="absolute inset-0 bg-[linear-gradient(30deg,transparent_45%,#d9ded8_46%,#d9ded8_48%,transparent_49%),linear-gradient(120deg,transparent_45%,#d9ded8_46%,#d9ded8_48%,transparent_49%)] bg-[length:90px_90px]" />
 
@@ -73,36 +235,64 @@ export default function TrackOrderModal({ onClose }) {
             </svg>
 
             {/* Destination marker */}
-            <div className="absolute right-[15%] top-[9%] flex h-8 w-8 items-center justify-center rounded-full bg-[#176B2C] text-white shadow-md">
+            <div className="absolute right-[15%] top-[9%] z-10 flex h-8 w-8 items-center justify-center rounded-full bg-[#176B2C] text-white shadow-md">
               <MapPin className="h-5 w-5 fill-white" />
             </div>
 
             {/* Current location */}
             <div className="absolute left-[18%] bottom-[15%] flex h-4 w-4 items-center justify-center rounded-full border-[3px] border-[#6DBB43] bg-white" />
 
-            {/* Truck */}
-            <div className="absolute left-[48%] top-[45%] flex h-10 w-14 rotate-[-10deg] items-center justify-center rounded-md bg-[#1D642C] text-white shadow-lg">
+            {/* Truck: position along the route changes every tick, so left/top
+                are the one inline style (no fixed class can express them) */}
+            <div
+              className="absolute flex h-10 w-14 -translate-x-1/2 -translate-y-1/2 rotate-[-10deg] items-center justify-center rounded-md bg-[#1D642C] text-white shadow-lg transition-all duration-1000 ease-linear"
+              style={{ left: `${truckPosition.left}%`, top: `${truckPosition.top}%` }}
+            >
               <Truck className="h-6 w-6" />
+            </div>
             </div>
 
             {/* Live tracking badge */}
             <div className="absolute left-3 top-3 flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-[9px] font-semibold shadow-sm">
-              <span className="h-2 w-2 rounded-full bg-[#3E9B36]" />
-              Live Tracking
+              {tracking.isDelivered ? (
+                <>
+                  <Check className="h-3 w-3 text-[#3E9B36]" />
+                  Delivered
+                </>
+              ) : (
+                <>
+                  <span className="h-2 w-2 animate-pulse rounded-full bg-[#3E9B36]" />
+                  Live Tracking
+                </>
+              )}
             </div>
 
             {/* Zoom controls */}
             <div className="absolute right-3 top-1/2 flex -translate-y-1/2 flex-col overflow-hidden rounded-lg bg-white shadow-md">
-              <button className="flex h-10 w-10 cursor-pointer items-center justify-center border-b text-gray-600">
+              <button
+                onClick={() => setZoomStep((step) => Math.min(ZOOM_CLASSES.length - 1, step + 1))}
+                disabled={zoomStep === ZOOM_CLASSES.length - 1}
+                aria-label="Zoom in"
+                className="flex h-10 w-10 cursor-pointer items-center justify-center border-b text-gray-600 disabled:cursor-not-allowed"
+              >
                 <Plus className="h-5 w-5" />
               </button>
-              <button className="flex h-10 w-10 cursor-pointer items-center justify-center text-gray-600">
+              <button
+                onClick={() => setZoomStep((step) => Math.max(0, step - 1))}
+                disabled={zoomStep === 0}
+                aria-label="Zoom out"
+                className="flex h-10 w-10 cursor-pointer items-center justify-center text-gray-600 disabled:cursor-not-allowed"
+              >
                 <Minus className="h-5 w-5" />
               </button>
             </div>
 
             {/* Locate button */}
-            <button className="absolute bottom-3 right-3 flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-white shadow-md">
+            <button
+              onClick={() => setZoomStep(0)}
+              aria-label="Reset zoom"
+              className="absolute bottom-3 right-3 flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-white shadow-md"
+            >
               <LocateFixed className="h-5 w-5 text-gray-700" />
             </button>
 
@@ -115,10 +305,18 @@ export default function TrackOrderModal({ onClose }) {
 
                 <div>
                   <p className="text-[10px] font-bold text-[#236B2D]">
-                    2.3 km away
+                    {tracking.isDelivered
+                      ? "Delivered"
+                      : isOutForDelivery
+                        ? `${tracking.kmAway.toFixed(1)} km away`
+                        : "Preparing your order"}
                   </p>
                   <p className="text-[9px] text-gray-700">
-                    8 minutes remaining
+                    {tracking.isDelivered
+                      ? "Arrived at your address"
+                      : isOutForDelivery
+                        ? formatRemaining(tracking.remainingSeconds)
+                        : "Courier leaves soon"}
                   </p>
                 </div>
               </div>
@@ -148,98 +346,41 @@ export default function TrackOrderModal({ onClose }) {
 
             {/* Timeline */}
             <div className="mt-2 flex-1">
-              {/* Confirmed */}
-              <div className="relative flex gap-3">
-                <div className="relative flex w-5 justify-center">
-                  <div className="z-10 flex h-5 w-5 items-center justify-center rounded-full bg-[#E7F1E3]">
-                    <Check className="h-3 w-3 text-[#3E5730]" />
+              {TIMELINE_STEPS.map((step, index) => {
+                const state = getStepState(index);
+                const styles = STEP_STYLES[state];
+                const isLast = index === TIMELINE_STEPS.length - 1;
+                const time = formatClock(clock.startedAt + STAGE_OFFSETS_MS[index]);
+
+                // The last step has no connector, no "relative" and no bottom padding (as before).
+                return (
+                  <div key={step.title} className={isLast ? "flex gap-3" : "relative flex gap-3"}>
+                    <div className={isLast ? "flex w-5 justify-center" : "relative flex w-5 justify-center"}>
+                      <div className={styles.badge}>
+                        {STEP_ICONS[state]}
+                      </div>
+
+                      {!isLast && (
+                        <div className={state === "done" ? CONNECTOR_DONE : CONNECTOR_PENDING} />
+                      )}
+                    </div>
+
+                    <div className={isLast ? "flex-1" : "flex-1 pb-3"}>
+                      <div className="flex justify-between">
+                        <p className={styles.title}>
+                          {step.title}
+                        </p>
+                        <span className={styles.time}>
+                          {index <= tracking.stageIndex ? time : `Est. ${time}`}
+                        </span>
+                      </div>
+                      <p className={styles.description}>
+                        {step.description}
+                      </p>
+                    </div>
                   </div>
-
-                  <div className="absolute top-5 h-9 w-[2px] bg-[#6D9A5A]" />
-                </div>
-
-                <div className="flex-1 pb-3">
-                  <div className="flex justify-between">
-                    <p className="text-[10px] font-semibold text-gray-800">
-                      Order Confirmed
-                    </p>
-                    <span className="text-[8px] text-gray-400">3:45 PM</span>
-                  </div>
-                  <p className="mt-0.5 text-[8px] text-gray-500">
-                    Your order has been received and verified by FreshMart
-                  </p>
-                </div>
-              </div>
-
-              {/* Preparing */}
-              <div className="relative flex gap-3">
-                <div className="relative flex w-5 justify-center">
-                  <div className="z-10 flex h-5 w-5 items-center justify-center rounded-full bg-[#E7F1E3]">
-                    <Check className="h-3 w-3 text-[#3E5730]" />
-                  </div>
-
-                  <div className="absolute top-5 h-9 w-[2px] bg-[#6D9A5A]" />
-                </div>
-
-                <div className="flex-1 pb-3">
-                  <div className="flex justify-between">
-                    <p className="text-[10px] font-semibold text-gray-800">
-                      Preparing Your Items
-                    </p>
-                    <span className="text-[8px] text-gray-400">4:02 PM</span>
-                  </div>
-                  <p className="mt-0.5 text-[8px] text-gray-500">
-                    Fresh items are being hand-picked and safely packed
-                  </p>
-                </div>
-              </div>
-
-              {/* Out for delivery */}
-              <div className="relative flex gap-3">
-                <div className="relative flex w-5 justify-center">
-                  <div className="z-10 flex h-5 w-5 items-center justify-center rounded-full border-2 border-[#3E5730] bg-[#3E5730]">
-                    <Circle className="h-2 w-2 fill-white text-white" />
-                  </div>
-
-                  <div className="absolute top-5 h-9 w-[2px] border-l border-dashed border-gray-300" />
-                </div>
-
-                <div className="flex-1 pb-3">
-                  <div className="flex justify-between">
-                    <p className="text-[10px] font-bold text-[#3E5730]">
-                      Out for Delivery
-                    </p>
-                    <span className="text-[8px] text-[#3E5730]">4:15 PM</span>
-                  </div>
-                  <p className="mt-0.5 text-[8px] text-gray-600">
-                    Carlos Rodriguez is on his way to your nearest spot with
-                    your basket
-                  </p>
-                </div>
-              </div>
-
-              {/* Delivered */}
-              <div className="flex gap-3">
-                <div className="flex w-5 justify-center">
-                  <div className="z-10 flex h-5 w-5 items-center justify-center rounded-full border border-gray-300 bg-white">
-                    <Circle className="h-2 w-2 fill-gray-300 text-gray-300" />
-                  </div>
-                </div>
-
-                <div className="flex-1">
-                  <div className="flex justify-between">
-                    <p className="text-[10px] font-medium text-gray-400">
-                      Delivered
-                    </p>
-                    <span className="text-[8px] text-gray-400">
-                      Est. 4:45 PM
-                    </span>
-                  </div>
-                  <p className="mt-0.5 text-[8px] text-gray-400">
-                    Securely received and left at your doorstep
-                  </p>
-                </div>
-              </div>
+                );
+              })}
             </div>
 
             {/* Courier */}

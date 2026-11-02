@@ -5,7 +5,8 @@ import { Check,  } from "lucide-react";
 import Link from "next/link";
 // import { useCartStore } from "@/store/useCartStore";
 import { useOrderStore } from "@/store/useOrderStore";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 import BasketSummary from "@/components/cart/BasketSummary";
 import TrackOrderModal from "@/components/checkout/TrackOrderModal";
@@ -36,7 +37,28 @@ const orderTotalWeight = useOrderStore(
 );
 
 const orderItems = useOrderStore((state) => state.orderItems);
+const orderTip = useOrderStore((state) => state.orderTip);
 
+const router = useRouter();
+const [hydrated, setHydrated] = useState(false);
+
+// Restore the order from sessionStorage (survives a page refresh).
+useEffect(() => {
+  Promise.resolve(useOrderStore.persist.rehydrate()).then(() =>
+    setHydrated(true)
+  );
+}, []);
+
+// No order to show (e.g. visited directly): send the user home.
+useEffect(() => {
+  if (hydrated && !orderNumber) {
+    router.replace("/");
+  }
+}, [hydrated, orderNumber, router]);
+
+if (!hydrated || !orderNumber) {
+  return null;
+}
 
 
   return (
@@ -145,9 +167,9 @@ const orderItems = useOrderStore((state) => state.orderItems);
               </div>
 
               <p className="mt-6 border-t border-neutral-100 pt-4 text-sm text-neutral-500">
-                We&apos;ve sent a detailed receipt and order tracking link to{" "}
+                We&apos;ve sent a receipt to{" "}
                 <span className="text-neutral-900">
-               {deliveryData.contactInfo}
+               {deliveryData.email}
                 </span>
                 . You can also keep this page open to track real-time order
                 updates.
@@ -235,7 +257,7 @@ const orderItems = useOrderStore((state) => state.orderItems);
   totalWeight={orderTotalWeight}
   deliveryFee={deliveryFee}
    onContinueToTrack={() => setTrackOpen(true)}
-//   tip={tip}
+  tip={orderTip}
   isConfirmation={true}
 />
         </div>
