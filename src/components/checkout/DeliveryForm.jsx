@@ -16,6 +16,7 @@ const DeliveryForm = forwardRef(function DeliveryForm(
     const [formData, setFormData] = useState({
         fullName: "",
         contactInfo: "",
+        email: "",
         address1: "",
         address2: "",
         city: "",
@@ -36,16 +37,22 @@ const DeliveryForm = forwardRef(function DeliveryForm(
         }
 
         if (!formData.contactInfo.trim()) {
-            newErrors.contactInfo = "Email or phone number is required";
+            newErrors.contactInfo = "Phone number is required";
         } else {
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             const phoneRegex = /^[0-9+\-\s()]{7,}$/;
 
-            if (
-                !emailRegex.test(formData.contactInfo) &&
-                !phoneRegex.test(formData.contactInfo)
-            ) {
-                newErrors.contactInfo = "Enter a valid email or phone number";
+            if (!phoneRegex.test(formData.contactInfo)) {
+                newErrors.contactInfo = "Enter a valid phone number";
+            }
+        }
+
+        if (!formData.email.trim()) {
+            newErrors.email = "Email is required";
+        } else {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+            if (!emailRegex.test(formData.email.trim())) {
+                newErrors.email = "Enter a valid email address";
             }
         }
 
@@ -138,13 +145,36 @@ if (!formData.postalCode.trim()) {
                             id="contactInfo"
                             type="text"
                             name="contactInfo"
-                            placeholder="Phone number or email"
+                            placeholder="Phone number"
                             value={formData.contactInfo}
                             onChange={handleChange}
                             className="w-full rounded-[8px] border border-gray-200 p-[12px] outline-none"
                         />
                         {errors.contactInfo && (
     <p className="text-sm text-red-500">{errors.contactInfo}</p>
+)}
+                    </div>
+
+                    {/* Email */}
+                    <div className="flex flex-col gap-[6px]">
+                        <label
+                            htmlFor="email"
+                            className="text-[14px] font-semibold text-[#1F2937]"
+                        >
+                            Email
+                        </label>
+
+                        <input
+                            id="email"
+                            type="email"
+                            name="email"
+                            placeholder="Enter your email"
+                            value={formData.email}
+                            onChange={handleChange}
+                            className="w-full rounded-[8px] border border-gray-200 p-[12px] outline-none"
+                        />
+                        {errors.email && (
+    <p className="text-sm text-red-500">{errors.email}</p>
 )}
                     </div>
 

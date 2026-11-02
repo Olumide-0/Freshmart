@@ -13,7 +13,7 @@ export default function PaymentMethodModal({
     setPaymentOpen,
     paymentMethod,
     setPaymentMethod,
-    setCardDetailsOpen,
+    onConfirmPaymentMethod,
 }) {
     if (!paymentOpen) {
         return null;
@@ -43,8 +43,6 @@ export default function PaymentMethodModal({
                         type="button"
                         onClick={() => {
                             setPaymentMethod("Credit / Debit Card");
-                            setPaymentOpen(false);
-                            setCardDetailsOpen(true);
                         }}
                         className={`flex w-full items-center gap-2 rounded-[8px] border p-[14px] transition cursor-pointer ${paymentMethod === "Credit / Debit Card"
                                 ? "border-[#3E5730] bg-[#F3F7F1]"
@@ -68,6 +66,7 @@ export default function PaymentMethodModal({
                         image={VisaLogo}
                         paymentMethod={paymentMethod}
                         setPaymentMethod={setPaymentMethod}
+                        disabled
                     />
 
                     {/* Google Pay */}
@@ -76,6 +75,7 @@ export default function PaymentMethodModal({
                         image={GooglePay}
                         paymentMethod={paymentMethod}
                         setPaymentMethod={setPaymentMethod}
+                        disabled
                     />
 
                     {/* Mastercard */}
@@ -84,6 +84,7 @@ export default function PaymentMethodModal({
                         image={Mastercard}
                         paymentMethod={paymentMethod}
                         setPaymentMethod={setPaymentMethod}
+                        disabled
                     />
 
                     {/* Apple Pay */}
@@ -92,6 +93,7 @@ export default function PaymentMethodModal({
                         image={ApplePay}
                         paymentMethod={paymentMethod}
                         setPaymentMethod={setPaymentMethod}
+                        disabled
                     />
 
                 </div>
@@ -99,8 +101,15 @@ export default function PaymentMethodModal({
                 {/* Confirm */}
                 <button
                     type="button"
-                    onClick={() => setPaymentOpen(false)}
-                    className="mt-[24px] w-full rounded-[8px] bg-[#3E5730] py-[12px] text-[14px] font-semibold text-white"
+                    disabled={paymentMethod !== "Credit / Debit Card"}
+                    onClick={() => {
+                        setPaymentOpen(false);
+                        onConfirmPaymentMethod();
+                    }}
+                    className={`mt-[24px] w-full rounded-[8px] py-[12px] text-[14px] font-semibold text-white ${paymentMethod === "Credit / Debit Card"
+                            ? "cursor-pointer bg-[#3E5730]"
+                            : "cursor-not-allowed bg-[#B9C6B0]"
+                        }`}
                 >
                     Confirm Payment Method
                 </button>

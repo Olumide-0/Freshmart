@@ -30,18 +30,33 @@ export default function BasketSummary({
   tax = 0,
   onContinueToPayment,
   onContinueToTrack,
+  tip: tipProp,
+  isPaymentDisabled = false,
 }) {
   const [moreOpen, setMoreOpen] = useState(false);
   const [tipOption, setTipOption] = useState("");
-  
+  const [customTip, setCustomTip] = useState("");
 
-  const tip = useOrderStore((state) => state.tip);
+
+  const storeTip = useOrderStore((state) => state.tip);
   const setTip = useOrderStore((state) => state.setTip);
+
+  // Confirmation passes the saved order tip; cart/checkout use the live tip.
+  const tip = tipProp ?? storeTip;
 
   const estimatedTotal = subtotal + deliveryFee + tax + tip;
   const handleTipChange = (amount, option) => {
     setTip(amount);
     setTipOption(option);
+  };
+
+  const handleCustomTipChange = (e) => {
+    // Digits and one decimal point only (max 2 decimals), so no negatives.
+    const [whole, ...rest] = e.target.value.replace(/[^0-9.]/g, "").split(".");
+    const value = rest.length ? `${whole}.${rest.join("").slice(0, 2)}` : whole;
+
+    setCustomTip(value);
+    setTip(Number(value) || 0);
   };
   return (
     <div className="flex w-full shrink-0 flex-col gap-[16px] overflow-hidden rounded-[8px] bg-white p-[20px] sm:p-[24px] lg:w-[380px]">
@@ -203,7 +218,7 @@ export default function BasketSummary({
                 {/* Custom */}
                 <button
                   type="button"
-                  onClick={() => handleTipChange(0, "Custom")}
+                  onClick={() => handleTipChange(Number(customTip) || 0, "Custom")}
                   className={`flex-1 rounded-[8px] border py-[10px] text-[14px] font-semibold cursor-pointer ${tipOption === "Custom"
                       ? "border-[#3E5730] bg-[#E6F0E1] text-[#3E5730]"
                       : "border-gray-200 text-[#1F2937]"
@@ -212,6 +227,25 @@ export default function BasketSummary({
                   Custom
                 </button>
               </div>
+
+              {/* Custom tip input */}
+              {tipOption === "Custom" && (
+                <div className="relative">
+                  <span className="pointer-events-none absolute left-[12px] top-1/2 -translate-y-1/2 text-[14px] font-semibold text-gray-500">
+                    $
+                  </span>
+
+                  <input
+                    type="text"
+                    inputMode="decimal"
+                    aria-label="Custom tip amount"
+                    placeholder="Enter tip amount"
+                    value={customTip}
+                    onChange={handleCustomTipChange}
+                    className="w-full rounded-[8px] border border-gray-200 p-[12px] pl-[26px] outline-none"
+                  />
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -297,7 +331,11 @@ export default function BasketSummary({
         <button
           type="button"
           onClick={onContinueToPayment}
-          className="w-full rounded-[8px] bg-[#3E5730] py-[12px] text-[16px] font-semibold text-white sm:py-[14px] cursor-pointer"
+          disabled={isPaymentDisabled}
+          className={`w-full rounded-[8px] py-[12px] text-[16px] font-semibold text-white sm:py-[14px] ${!isPaymentDisabled
+              ? "cursor-pointer bg-[#3E5730]"
+              : "cursor-not-allowed bg-[#B9C6B0]"
+            }`}
         >
           Continue to payment
         </button>
