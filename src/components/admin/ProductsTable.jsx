@@ -2,15 +2,17 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, Package, Pencil, Plus, Search, Trash2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, CloudOff, Package, Pencil, Plus, RefreshCw, Search, Trash2 } from "lucide-react";
 import {
   CATEGORIES,
   STOCK_STATUSES,
   getCategoryLabel,
   getStockStatus,
+  reloadProducts,
   removeProduct,
   updateProduct,
   useProducts,
+  useProductsError,
 } from "@/lib/admin/productsData";
 import ProductThumb from "@/components/admin/ProductThumb";
 import DeleteModal from "@/components/admin/DeleteModal";
@@ -58,6 +60,7 @@ function editHref(id) {
 
 export default function ProductsTable() {
   const products = useProducts();
+  const loadError = useProductsError();
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("all");
   const [status, setStatus] = useState("all");
@@ -129,7 +132,9 @@ export default function ProductsTable() {
   };
 
   const summary = loading
-    ? "Loading products…"
+    ? loadError
+      ? "Products could not be loaded"
+      : "Loading products…"
     : sorted.length === 0
     ? `0 of ${products.length} products`
     : `Showing ${start + 1}-${start + visible.length} of ${sorted.length} products`;
@@ -197,7 +202,21 @@ export default function ProductsTable() {
 
       {/* Content */}
       <div className="mt-[16px]">
-        {loading ? (
+        {loading && loadError ? (
+          <div role="alert" className="flex flex-col items-center rounded-[8px] border border-black/5 bg-white px-[16px] py-[48px] text-center">
+            <CloudOff className="h-[32px] w-[32px] text-gray-400" strokeWidth={1.75} />
+            <p className="mt-[12px] text-[16px] font-bold text-[#1F2937]">Couldn’t load products</p>
+            <p className="mt-[4px] break-words text-[14px] text-gray-500">{loadError}</p>
+            <button
+              type="button"
+              onClick={() => reloadProducts()}
+              className="mt-[16px] inline-flex items-center gap-[6px] rounded-[8px] bg-[#2F5D3A] px-[16px] py-[8px] text-[14px] font-semibold text-white hover:bg-[#3E5730]"
+            >
+              <RefreshCw className="h-[16px] w-[16px]" strokeWidth={2} />
+              Retry
+            </button>
+          </div>
+        ) : loading ? (
           <ul className="flex flex-col gap-[8px]" aria-hidden="true">
             {Array.from({ length: 6 }).map((_, i) => (
               <li key={i} className="flex animate-pulse items-center gap-[12px] rounded-[8px] border border-black/5 bg-white p-[14px]">
