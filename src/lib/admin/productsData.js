@@ -1,14 +1,12 @@
-// TEMPORARY: replace with Convex.
-// This is an in-memory zustand store seeded from src/data/product.js. It resets on
-// every page refresh, and the storefront never sees these changes. When Convex
-// lands, swap the hooks for useQuery and the mutations for useMutation, and keep
-// these export names so the admin screens don't change.
-// The real protection must be a server-side admin check inside every Convex
-// function that changes products; validateProduct() below only helps the UI.
+// Admin product data, backed by the Express API through src/lib/api.js.
+// The hooks keep a small zustand cache so the admin screens share one list.
+// SECURITY TODO: ADMIN_ENABLED only hides the admin UI. These requests go
+// straight from the browser to the API, so the Express API itself must check
+// for an authenticated admin on POST, PATCH and DELETE /products.
 
 import { useEffect } from "react";
 import { create } from "zustand";
-import { PRODUCTS } from "@/data/product";
+import api from "@/lib/api";
 import { CATEGORY_LABELS } from "@/lib/categories";
 
 export const LOW_STOCK_THRESHOLD = 10;
@@ -41,40 +39,7 @@ export function getCategoryLabel(value) {
   return CATEGORY_LABELS[value] ?? value;
 }
 
-// --- Seed ---------------------------------------------------------------
-// stock and available don't exist in src/data. These numbers are invented demo
-// values: 5 for items with the "Low in stock" badge, 24 for everything else,
-// and every item available.
-function seedProducts() {
-  return PRODUCTS.map((p, i) => ({
-    id: p.slug,
-    name: p.name,
-    price: Number(p.price),
-    category: p.category,
-    image: p.image, // static import object; kept as-is unless replaced in the form
-    gallery: p.gallery ?? [],
-    badge: p.badge ?? null,
-    cta: p.cta ?? "cart",
-    stock: p.badge === "Low in stock" ? 5 : 24,
-    available: true,
-    createdAt: i, // seed order; new products get Date.now() so they sort as newest
-  }));
-}
-
-const useAdminProductsStore = create(() => ({ products: undefined }));
-
-let loadStarted = false;
-
-// Simulates the async first load a Convex query would have.
-function ensureLoaded() {
-  if (loadStarted) return;
-  loadStarted = true;
-  setTimeout(() => {
-    useAdminProductsStore.setState({ products: seedProducts() });
-  }, 300);
-}
-
-// --- Validation (shared by the form and the mutations) -------------------
+// --- Validation (client-side help for the form; the API is the real check) --
 export function isImageRef(value) {
   if (value && typeof value === "object" && value.src) return true; // static import
   if (typeof value !== "string") return false;
@@ -105,7 +70,9 @@ export function validateProduct(data) {
   if (data.badge && !BADGES.includes(data.badge)) errors.badge = "Choose a valid badge";
   if (!CTA_OPTIONS.some((o) => o.value === data.cta)) errors.cta = "Choose a button type";
 
-  if (!isImageRef(data.image))
+  // Image is optional: empty means "use the placeholder". Only check the format when set.
+  const image = typeof data.image === "string" ? data.image.trim() : data.image;
+  if (image && !isImageRef(image))
     errors.image = "Enter an image path starting with / or a full http(s) URL";
 
   if ((data.gallery ?? []).some((g) => !isImageRef(g)))
@@ -114,100 +81,232 @@ export function validateProduct(data) {
   return errors;
 }
 
-function normalize(data) {
+// --- API errors ----------------------------------------------------------
+const API_FIELDS = ["name", "price", "category", "stock", "image", "gallery", "badge", "cta", "available"];
+
+// One readable message from an axios error: 400 { errors: [...] } or { error }.
+export function getApiErrorMessage(error) {
+  const data = error?.response?.data;
+  if (Array.isArray(data?.errors) && data.errors.length > 0) {
+    return data.errors.map(String).join(". ");
+  }
+  if (typeof data?.error === "string" && data.error) return data.error;
+  if (error?.response) return `The API returned an error (${error.response.status})`;
+  // No response: API down, CORS blocked, timeout. Non-axios errors (e.g. the
+  // missing NEXT_PUBLIC_API_URL guard in api.js) keep their own message.
+  if (!error?.isAxiosError && error?.message) return error.message;
+  return "Could not reach the API";
+}
+
+// Splits a 400's errors[] into { fieldErrors: { price: "Price must be..." }, otherErrors: [...] }.
+// Each API message starts with the field name, e.g. "price must be a number, 0 or more".
+function getApiFieldErrors(error) {
+  const list = error?.response?.status === 400 ? error.response.data?.errors : null;
+  const fieldErrors = {};
+  const otherErrors = [];
+  for (const raw of Array.isArray(list) ? list : []) {
+    const message = String(raw);
+    const field = API_FIELDS.find((f) => message === f || message.startsWith(`${f} `));
+    if (field && !fieldErrors[field]) {
+      fieldErrors[field] = message.charAt(0).toUpperCase() + message.slice(1);
+    } else {
+      otherErrors.push(message);
+    }
+  }
+  return { fieldErrors, otherErrors };
+}
+
+// What the mutations throw: err.message works with the existing toasts, and
+// err.fieldErrors / err.otherErrors let the form show 400s inline.
+function toApiError(error) {
+  const err = new Error(getApiErrorMessage(error));
+  const { fieldErrors, otherErrors } = getApiFieldErrors(error);
+  err.status = error?.response?.status ?? null;
+  err.fieldErrors = fieldErrors;
+  err.otherErrors = otherErrors;
+  err.cause = error;
+  return err;
+}
+
+// --- Mapping between the API and the screens -------------------------------
+function toImageString(value) {
+  if (value && typeof value === "object") return value.src ?? "";
+  return String(value ?? "").trim();
+}
+
+// The screens sort with `b.createdAt - a.createdAt`, so ISO strings become
+// millisecond numbers here (same shape the screens already use).
+function fromApi(p) {
   return {
-    name: String(data.name).trim(),
-    price: Number(data.price),
-    category: data.category,
-    image: typeof data.image === "string" ? data.image.trim() : data.image,
-    gallery: (data.gallery ?? []).map((g) => (typeof g === "string" ? g.trim() : g)),
-    badge: data.badge || null,
-    cta: data.cta,
-    stock: Number(data.stock),
-    available: Boolean(data.available),
+    id: p.id,
+    name: p.name ?? "",
+    price: Number(p.price),
+    category: p.category ?? "",
+    stock: Number(p.stock),
+    image: p.image ?? "",
+    gallery: Array.isArray(p.gallery) ? p.gallery : [],
+    badge: p.badge || null,
+    cta: p.cta || "cart",
+    available: p.available ?? true,
+    createdAt: Date.parse(p.createdAt) || 0,
+    updatedAt: Date.parse(p.updatedAt) || 0,
   };
 }
 
-function wait(ms = 250) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+// Builds the request body from whichever fields are present. Never sends id,
+// createdAt or updatedAt: the API owns those.
+function toApiBody(data) {
+  const body = {};
+  if ("name" in data) body.name = String(data.name ?? "").trim();
+  if ("price" in data) body.price = Number(data.price);
+  if ("category" in data) body.category = data.category;
+  if ("stock" in data) body.stock = Number(data.stock);
+  if ("image" in data) body.image = toImageString(data.image);
+  if ("gallery" in data) body.gallery = (data.gallery ?? []).map(toImageString);
+  if ("badge" in data) body.badge = data.badge ? String(data.badge) : "";
+  if ("cta" in data) body.cta = String(data.cta ?? "");
+  if ("available" in data) body.available = Boolean(data.available);
+  return body;
 }
 
-function getLoadedProducts() {
-  const { products } = useAdminProductsStore.getState();
-  if (!products) throw new Error("Products are still loading. Try again in a moment.");
-  return products;
+// --- Cache -------------------------------------------------------------------
+const useAdminProductsStore = create(() => ({
+  products: undefined, // undefined = not loaded yet
+  error: null, // list load error message
+  detail: { id: null, product: undefined, error: null }, // the product open in the form
+}));
+
+const setState = useAdminProductsStore.setState;
+const getState = useAdminProductsStore.getState;
+
+let listRequest = null;
+let mutationCount = 0; // a list response that started before a mutation is stale
+
+function loadProducts() {
+  if (listRequest) return listRequest;
+  const startedAt = mutationCount;
+  listRequest = api
+    .get("/products")
+    .then((res) => {
+      if (startedAt !== mutationCount) return;
+      setState({ products: (Array.isArray(res.data) ? res.data : []).map(fromApi), error: null });
+    })
+    .catch((err) => {
+      // Keep showing an already-loaded list if a background refresh fails.
+      if (getState().products === undefined) setState({ error: getApiErrorMessage(err) });
+    })
+    .finally(() => {
+      listRequest = null;
+    });
+  return listRequest;
 }
 
-function assertValid(data) {
-  const errors = validateProduct(data);
-  const first = Object.values(errors)[0];
-  if (first) throw new Error(first);
-}
-
-// Builds "<slug>-<timestamp>" and, if that id is already taken in the store,
-// appends -2, -3, ... until it is unique.
-function makeId(name, products) {
-  const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
-  const base = `${slug || "product"}-${Date.now().toString(36)}`;
-  const taken = new Set(products.map((p) => p.id));
-  let id = base;
-  let suffix = 2;
-  while (taken.has(id)) {
-    id = `${base}-${suffix}`;
-    suffix += 1;
-  }
-  return id;
+function loadProduct(id) {
+  setState({ detail: { id, product: undefined, error: null } });
+  api
+    .get(`/products/${encodeURIComponent(id)}`)
+    .then((res) => {
+      if (getState().detail.id !== id) return;
+      setState({ detail: { id, product: fromApi(res.data), error: null } });
+    })
+    .catch((err) => {
+      if (getState().detail.id !== id) return;
+      if (err?.response?.status === 404) {
+        setState({ detail: { id, product: null, error: null } });
+      } else {
+        setState({ detail: { id, product: undefined, error: getApiErrorMessage(err) } });
+      }
+    });
 }
 
 // --- Public API: screens import only from this file ----------------------
 
-// undefined while loading, then an array.
+// undefined while loading (or if loading failed), then an array.
+// Refreshes from the API each time a screen using it mounts.
 export function useProducts() {
   const products = useAdminProductsStore((s) => s.products);
   useEffect(() => {
-    ensureLoaded();
+    if (getState().error) return; // wait for reloadProducts() (Retry)
+    loadProducts();
   }, []);
   return products;
 }
 
-// undefined while loading, null if not found, otherwise the product.
+// Error message if the list could not be loaded, otherwise null.
+export function useProductsError() {
+  return useAdminProductsStore((s) => s.error);
+}
+
+// Clears the list error and fetches again (for a Retry button).
+export function reloadProducts() {
+  setState({ products: undefined, error: null });
+  return loadProducts();
+}
+
+// undefined while loading (or if loading failed), null if not found (404),
+// otherwise the product. With no id (the "new" form) it returns null.
 export function useProduct(id) {
-  const products = useProducts();
-  if (products === undefined) return undefined;
-  return products.find((p) => p.id === id) ?? null;
+  const detail = useAdminProductsStore((s) => s.detail);
+  useEffect(() => {
+    if (id) loadProduct(id);
+  }, [id]);
+  if (!id) return null;
+  return detail.id === id ? detail.product : undefined;
+}
+
+// Error message if that product could not be loaded (not a 404), otherwise null.
+export function useProductError(id) {
+  return useAdminProductsStore((s) => (id && s.detail.id === id ? s.detail.error : null));
+}
+
+// Fetches that product again (for a Retry button).
+export function reloadProduct(id) {
+  if (id) loadProduct(id);
 }
 
 export async function createProduct(data) {
-  await wait();
-  const products = getLoadedProducts();
-  assertValid(data);
-  const clean = normalize(data);
-  const product = { ...clean, id: makeId(clean.name, products), createdAt: Date.now() };
-  useAdminProductsStore.setState({ products: [product, ...products] });
+  let product;
+  try {
+    const res = await api.post("/products", toApiBody(data));
+    product = fromApi(res.data);
+  } catch (err) {
+    throw toApiError(err);
+  }
+  mutationCount += 1;
+  setState((s) => ({ products: s.products ? [product, ...s.products] : s.products }));
   return product.id;
 }
 
-// Partial update: fields left out of `data` (e.g. image) keep their current value.
+// Partial update: only the fields present in `data` are sent.
 export async function updateProduct(id, data) {
-  await wait();
-  const products = getLoadedProducts();
-  const existing = products.find((p) => p.id === id);
-  if (!existing) throw new Error("Product not found. It may have been deleted.");
-  const merged = { ...existing, ...data };
-  assertValid(merged);
-  const updated = { ...existing, ...normalize(merged) };
-  useAdminProductsStore.setState({
-    products: products.map((p) => (p.id === id ? updated : p)),
-  });
-  return id;
+  let product;
+  try {
+    const res = await api.patch(`/products/${encodeURIComponent(id)}`, toApiBody(data));
+    product = fromApi(res.data);
+  } catch (err) {
+    throw toApiError(err);
+  }
+  mutationCount += 1;
+  setState((s) => ({
+    products: s.products?.map((p) => (p.id === id ? product : p)),
+    detail: s.detail.id === id ? { id, product, error: null } : s.detail,
+  }));
+  return product.id;
 }
 
 export async function removeProduct(id) {
-  await wait();
-  const products = getLoadedProducts();
-  if (!products.some((p) => p.id === id)) {
-    throw new Error("Product not found. It may have already been deleted.");
+  try {
+    await api.delete(`/products/${encodeURIComponent(id)}`);
+  } catch (err) {
+    const apiError = toApiError(err);
+    // Already gone on the server: drop it from the cache too, then report it.
+    if (apiError.status === 404) {
+      mutationCount += 1;
+      setState((s) => ({ products: s.products?.filter((p) => p.id !== id) }));
+    }
+    throw apiError;
   }
-  useAdminProductsStore.setState({ products: products.filter((p) => p.id !== id) });
+  mutationCount += 1;
+  setState((s) => ({ products: s.products?.filter((p) => p.id !== id) }));
   return id;
 }

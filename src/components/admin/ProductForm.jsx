@@ -3,15 +3,17 @@
 import { useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Loader2, Package, Plus, X } from "lucide-react";
+import { ArrowLeft, CloudOff, Loader2, Package, Plus, RefreshCw, X } from "lucide-react";
 import {
   BADGES,
   CATEGORIES,
   CTA_OPTIONS,
   createProduct,
   isImageRef,
+  reloadProduct,
   updateProduct,
   useProduct,
+  useProductError,
   validateProduct,
 } from "@/lib/admin/productsData";
 import ProductThumb from "@/components/admin/ProductThumb";
@@ -70,8 +72,30 @@ function FormHeader({ isEdit }) {
 // the form's initial state comes straight from the product (no syncing effect).
 export default function ProductForm({ productId }) {
   const isEdit = Boolean(productId);
-  // For "new" this still loads the store, which createProduct needs.
+  // undefined while loading, null when not found (or for "new"), else the product.
   const product = useProduct(productId ?? null);
+  const loadError = useProductError(productId ?? null);
+
+  if (product === undefined && loadError) {
+    return (
+      <div>
+        <FormHeader isEdit={isEdit} />
+        <div role="alert" className="mt-[20px] flex flex-col items-center rounded-[8px] border border-black/5 bg-white px-[16px] py-[48px] text-center">
+          <CloudOff className="h-[32px] w-[32px] text-gray-400" strokeWidth={1.75} />
+          <p className="mt-[12px] text-[16px] font-bold text-[#1F2937]">Couldn’t load this product</p>
+          <p className="mt-[4px] break-words text-[14px] text-gray-500">{loadError}</p>
+          <button
+            type="button"
+            onClick={() => reloadProduct(productId)}
+            className="mt-[16px] inline-flex items-center gap-[6px] rounded-[8px] bg-[#2F5D3A] px-[16px] py-[8px] text-[14px] font-semibold text-white hover:bg-[#3E5730]"
+          >
+            <RefreshCw className="h-[16px] w-[16px]" strokeWidth={2} />
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (product === undefined) {
     return (
@@ -96,7 +120,7 @@ export default function ProductForm({ productId }) {
           <Package className="h-[32px] w-[32px] text-gray-400" strokeWidth={1.75} />
           <p className="mt-[12px] text-[16px] font-bold text-[#1F2937]">Product not found</p>
           <p className="mt-[4px] text-[14px] text-gray-500">
-            It may have been deleted, or the demo data reset after a refresh.
+            It may have been deleted.
           </p>
           <Link
             href="/admin/products"
@@ -125,7 +149,7 @@ function FormBody({ product }) {
     badge: product?.badge ?? "",
     cta: product?.cta ?? "cart",
     available: product?.available ?? true,
-    imageInput: "", // empty = keep the current image (edit) / required (new)
+    imageInput: "", // empty = keep the current image (edit) / placeholder (new)
   }));
   const [gallery, setGallery] = useState(() =>
     (product?.gallery ?? []).map((value, i) => ({ key: `seed-${i}`, value }))
@@ -134,9 +158,11 @@ function FormBody({ product }) {
   const [galleryInputError, setGalleryInputError] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [saving, setSaving] = useState(false);
+  // Field errors from an API 400, keyed by field; each clears when that field is edited.
+  const [apiErrors, setApiErrors] = useState({});
 
-  // Seeded images are static imports; they're kept unless a new path/URL is typed.
-  const currentImage = product?.image ?? null;
+  // The current image is kept unless a new path/URL is typed ("" = placeholder).
+  const currentImage = product?.image ?? "";
   const typedImage = values.imageInput.trim();
 
   const candidate = {
@@ -151,15 +177,24 @@ function FormBody({ product }) {
     gallery: gallery.map((g) => g.value),
   };
   const allErrors = validateProduct(candidate);
-  if (!typedImage && !currentImage) {
-    allErrors.image = "Image is required. Enter a path starting with / or a full http(s) URL";
-  }
-  // Errors appear after the first submit attempt, then update live as you type.
-  const errors = submitted ? allErrors : {};
+  // Client errors appear after the first submit attempt, then update live as you
+  // type. API errors fill in for fields the client check didn't flag.
+  const errors = { ...apiErrors, ...(submitted ? allErrors : {}) };
 
   const previewSrc = typedImage ? (isImageRef(typedImage) ? typedImage : null) : currentImage;
 
-  const setField = (field) => (e) => setValues((v) => ({ ...v, [field]: e.target.value }));
+  const clearApiError = (field) =>
+    setApiErrors((prev) => {
+      if (!prev[field]) return prev;
+      const next = { ...prev };
+      delete next[field];
+      return next;
+    });
+
+  const setField = (field) => (e) => {
+    setValues((v) => ({ ...v, [field]: e.target.value }));
+    clearApiError(field === "imageInput" ? "image" : field);
+  };
 
   const addGalleryImage = () => {
     const value = galleryInput.trim();
@@ -175,14 +210,19 @@ function FormBody({ product }) {
     setGallery((g) => [...g, { key, value }]);
     setGalleryInput("");
     setGalleryInputError("");
+    clearApiError("gallery");
   };
 
-  const removeGalleryImage = (key) => setGallery((g) => g.filter((item) => item.key !== key));
+  const removeGalleryImage = (key) => {
+    setGallery((g) => g.filter((item) => item.key !== key));
+    clearApiError("gallery");
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (saving) return;
     setSubmitted(true);
+    setApiErrors({});
 
     const firstError = Object.keys(allErrors)[0];
     if (firstError) {
@@ -199,9 +239,9 @@ function FormBody({ product }) {
       cta: candidate.cta,
       available: candidate.available,
       gallery: candidate.gallery,
+      // All nine fields are sent; an edit keeps the current image unless a new one was typed.
+      image: typedImage || currentImage,
     };
-    // Only send image when a new one was typed, so edits keep the original.
-    if (typedImage) payload.image = typedImage;
 
     setSaving(true);
     try {
@@ -214,14 +254,27 @@ function FormBody({ product }) {
       }
       router.push("/admin/products"); // keep the button disabled while navigating
     } catch (err) {
-      toast.error(err?.message || "Could not save product");
+      // 400: messages that start with a field name go inline; the rest go to the toast.
+      // 409/404 (and network errors) have no field errors, so err.message goes to the toast.
+      const fieldErrors = { ...(err?.fieldErrors ?? {}) };
+      const toastMessages = [...(err?.otherErrors ?? [])];
+      if (fieldErrors.available) {
+        // The availability switch has no inline error slot.
+        toastMessages.unshift(fieldErrors.available);
+        delete fieldErrors.available;
+      }
+      const fields = Object.keys(fieldErrors);
+      setApiErrors(fieldErrors);
+      if (fields.length > 0) document.getElementById(`pf-${fields[0]}`)?.focus();
+      if (toastMessages.length > 0) toast.error(toastMessages.join(". "));
+      else if (fields.length === 0) toast.error(err?.message || "Could not save product");
       setSaving(false);
     }
   };
 
   const imageHint = isEdit
-    ? "Leave empty to keep the current image. Real uploads come with Convex."
-    : "A path starting with / or a full http(s) URL. Real uploads come with Convex.";
+    ? "Leave empty to keep the current image. Real uploads come later."
+    : "A path starting with / or a full http(s) URL. Leave empty to use the placeholder.";
 
   return (
     <div>
@@ -338,13 +391,13 @@ function FormBody({ product }) {
           <div className="flex flex-col gap-[12px] rounded-[8px] border border-black/5 bg-white p-[20px]">
             <h2 className="text-[18px] font-extrabold text-[#1F2937]">Image</h2>
             <ProductThumb src={previewSrc} alt={values.name || "Product image preview"} className="h-[180px] w-full" />
-            <Field id="pf-image" label="Image path or URL" optional={isEdit} hint={imageHint} error={errors.image}>
+            <Field id="pf-image" label="Image path or URL" optional hint={imageHint} error={errors.image}>
               <input
                 id="pf-image"
                 type="text"
                 value={values.imageInput}
                 onChange={setField("imageInput")}
-                placeholder={isEdit ? "Keep current image" : "/images/avocado.png or https://…"}
+                placeholder={isEdit && currentImage ? "Keep current image" : "/images/avocado.png or https://…"}
                 aria-invalid={Boolean(errors.image)}
                 aria-describedby={describedBy("pf-image", errors.image, true)}
                 className={inputClass(errors.image)}
@@ -353,7 +406,10 @@ function FormBody({ product }) {
             {isEdit && typedImage && (
               <button
                 type="button"
-                onClick={() => setValues((v) => ({ ...v, imageInput: "" }))}
+                onClick={() => {
+                  setValues((v) => ({ ...v, imageInput: "" }));
+                  clearApiError("image");
+                }}
                 className="self-start text-[13px] font-semibold text-[#2F5D3A] hover:underline"
               >
                 Keep current image

@@ -1,13 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { AlertTriangle, ChevronRight, Package, PackageCheck, Pencil, Tags } from "lucide-react";
+import { AlertTriangle, ChevronRight, CloudOff, Package, PackageCheck, Pencil, RefreshCw, Tags } from "lucide-react";
 import {
   CATEGORIES,
   LOW_STOCK_THRESHOLD,
   getCategoryLabel,
   getStockStatus,
+  reloadProducts,
   useProducts,
+  useProductsError,
 } from "@/lib/admin/productsData";
 import ProductThumb from "@/components/admin/ProductThumb";
 import { Price, StatusBadge } from "@/components/admin/ui";
@@ -31,15 +33,35 @@ function StatCard({ icon: Icon, label, value, note, tone }) {
 
 export default function AdminOverview() {
   const products = useProducts();
+  const loadError = useProductsError();
 
   const header = (
     <div>
       <h1 className="text-[22px] font-extrabold text-[#1F2937] sm:text-[26px]">Overview</h1>
-      <p className="mt-[4px] text-[14px] text-gray-500">
-        Temporary demo data. Changes reset when you refresh the page.
-      </p>
+      <p className="mt-[4px] text-[14px] text-gray-500">Live product data from the API.</p>
     </div>
   );
+
+  if (products === undefined && loadError) {
+    return (
+      <div>
+        {header}
+        <div role="alert" className="mt-[20px] flex flex-col items-center rounded-[8px] border border-black/5 bg-white px-[16px] py-[48px] text-center">
+          <CloudOff className="h-[32px] w-[32px] text-gray-400" strokeWidth={1.75} />
+          <p className="mt-[12px] text-[16px] font-bold text-[#1F2937]">Couldn’t load products</p>
+          <p className="mt-[4px] break-words text-[14px] text-gray-500">{loadError}</p>
+          <button
+            type="button"
+            onClick={() => reloadProducts()}
+            className="mt-[16px] inline-flex items-center gap-[6px] rounded-[8px] bg-[#2F5D3A] px-[16px] py-[8px] text-[14px] font-semibold text-white hover:bg-[#3E5730]"
+          >
+            <RefreshCw className="h-[16px] w-[16px]" strokeWidth={2} />
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (products === undefined) {
     return (
