@@ -6,12 +6,15 @@ import { X, ArrowRight, Gift, Lock, Citrus } from "lucide-react";
 import Image from "next/image";
 import apple from "../../assets/image/image 98.png"
 import grape from "../../assets/image/image 95 (1).png"
+import { requestOtp, getAuthErrorMessage } from "@/lib/auth";
+import { COUNTRIES, DEFAULT_COUNTRY, getCountry, parsePhone } from "@/lib/phone";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function AuthModal({ onClose, onCodeSent }) {
   const [tab, setTab] = useState("email");
   const [loading, setLoading] = useState(false);
+  const [country, setCountry] = useState(DEFAULT_COUNTRY);
 
   const {
     register,
@@ -19,6 +22,8 @@ export default function AuthModal({ onClose, onCodeSent }) {
     formState: { errors },
     reset,
     setValue,
+    setError,
+    clearErrors,
   } = useForm();
 
   const switchTab = (nextTab) => {
@@ -41,15 +46,9 @@ export default function AuthModal({ onClose, onCodeSent }) {
       }
 
       if (tab === "phone") {
-        if (!/^\d+$/.test(value)) {
-          return "Only numbers are allowed";
-        }
-        if (value.length < 10) {
-          return "Phone number must be at least 10 digits";
-        }
-        if (value.length > 15) {
-          return "Phone number is too long";
-        }
+        // National number for the chosen country, e.g. 0803 123 4567 for Nigeria.
+        const { error } = parsePhone(value, country);
+        if (error) return error;
       }
 
       return true;
@@ -58,7 +57,9 @@ export default function AuthModal({ onClose, onCodeSent }) {
 
   const handleContactChange = (e) => {
     if (tab === "phone") {
-      const value = e.target.value.replace(/\D/g, "");
+      // Allow digits plus the separators people type (spaces, dashes, brackets, dots)
+      // and a leading + for a pasted international number; parsePhone() cleans them up.
+      const value = e.target.value.replace(/[^\d\s\-().+]/g, "");
       setValue("contact", value, { shouldValidate: false });
       rhfOnChange({ target: { name: "contact", value } });
     } else {
@@ -67,17 +68,25 @@ export default function AuthModal({ onClose, onCodeSent }) {
   };
 
   const onSubmit = async (data) => {
+    const contact =
+      tab === "email"
+        ? { type: "email", value: data.contact.trim() }
+        : {
+            type: "phone",
+            value: parsePhone(data.contact, country).international, // e.g. +2348031234567
+            dial: getCountry(country).dial, // for masking on the code screen
+          };
+
     setLoading(true);
-    // TODO: replace with real API call once backend is ready
-    await new Promise((resolve) => setTimeout(resolve, 600)); // simulate network delay
-    setLoading(false);
-
-    onCodeSent({ type: tab, value: data.contact.trim() });
-  };
-
-  const handleGoogle = () => {
-    // TODO: wire to real Google OAuth once backend is ready
-    alert("Google sign-in isn't connected yet.");
+    try {
+      await requestOtp(contact);
+      onCodeSent(contact);
+    } catch (err) {
+      // 400 (e.g. invalid number) and 429 (cooldown / rate limit) show inline.
+      setError("contact", { type: "server", message: getAuthErrorMessage(err) });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -167,17 +176,37 @@ export default function AuthModal({ onClose, onCodeSent }) {
         {/* Form Input */}
         <form onSubmit={handleSubmit(onSubmit)} className="mt-5">
           <div className="flex items-center justify-between rounded-[18px] bg-[#FAF7F2] p-2 pl-5 transition-all focus-within:ring-2 focus-within:ring-[#3B542C]/20">
+            {tab === "phone" && (
+              <>
+                <label htmlFor="auth-country" className="sr-only">Country code</label>
+                <select
+                  id="auth-country"
+                  value={country}
+                  onChange={(e) => {
+                    setCountry(e.target.value);
+                    clearErrors("contact");
+                  }}
+                  className="mr-3 shrink-0 cursor-pointer border-r border-gray-300 bg-transparent pr-2 text-[15px] font-medium text-[#1E293B] focus:outline-none"
+                >
+                  {COUNTRIES.map((c) => (
+                    <option key={c.iso} value={c.iso}>
+                      {c.iso} +{c.dial}
+                    </option>
+                  ))}
+                </select>
+              </>
+            )}
             <input
               {...contactField}
               onChange={handleContactChange}
               type={tab === "email" ? "email" : "tel"}
-              inputMode={tab === "phone" ? "numeric" : "email"}
+              inputMode={tab === "phone" ? "tel" : "email"}
               placeholder={
                 tab === "email"
                   ? "Enter your email address"
-                  : "Enter your phone number"
+                  : `Phone number, e.g. ${getCountry(country).placeholder}`
               }
-              className="w-full bg-transparent text-[15px] text-[#1E293B] placeholder:text-[#A0A5AD] focus:outline-none"
+              className="w-full min-w-0 bg-transparent text-[15px] text-[#1E293B] placeholder:text-[#A0A5AD] focus:outline-none"
             />
             <button
               type="submit"
@@ -202,13 +231,14 @@ export default function AuthModal({ onClose, onCodeSent }) {
           <div className="h-px flex-1 bg-gray-200" />
         </div>
 
-        {/* Google Sign In */}
+        {/* Google Sign In: no backend yet, shown disabled like the payment options */}
         <button
           type="button"
-          onClick={handleGoogle}
-          className="mt-6 flex w-full items-center justify-center rounded-[16px] border border-gray-300 py-3.5 transition-colors hover:bg-gray-50"
+          disabled
+          title="Google sign-in is coming soon"
+          className="mt-6 flex w-full cursor-not-allowed items-center justify-center gap-3 rounded-[16px] border border-gray-200 bg-gray-50 py-3.5"
         >
-          <svg className="h-6 w-6" viewBox="0 0 24 24">
+          <svg className="h-6 w-6 opacity-50 grayscale" viewBox="0 0 24 24" aria-hidden="true">
             <path
               fill="#4285F4"
               d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -226,6 +256,7 @@ export default function AuthModal({ onClose, onCodeSent }) {
               d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
             />
           </svg>
+          <span className="text-[12px] font-medium text-gray-500">Coming soon</span>
         </button>
 
         {/* Footer Security & Terms */}

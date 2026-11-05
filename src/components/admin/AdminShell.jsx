@@ -7,6 +7,8 @@ import { usePathname } from "next/navigation";
 import { LayoutDashboard, Package, CirclePlus, Store, Menu, X } from "lucide-react";
 import logo from "@/assets/image/fresh mart logo.png";
 import Toaster from "@/components/admin/Toast";
+import { logout } from "@/lib/auth";
+import { useAuthStore } from "@/store/useAuthStore";
 
 const NAV_ITEMS = [
   { href: "/admin", label: "Overview", icon: LayoutDashboard, match: (p) => p === "/admin" },
@@ -25,6 +27,7 @@ const NAV_ITEMS = [
 ];
 
 function SidebarNav({ pathname, onNavigate }) {
+  const user = useAuthStore((s) => s.user);
   return (
     <nav className="flex flex-1 flex-col gap-[4px] px-[12px] py-[16px]">
       {NAV_ITEMS.map(({ href, label, icon: Icon, match }) => {
@@ -54,6 +57,23 @@ function SidebarNav({ pathname, onNavigate }) {
           <Store className="h-[18px] w-[18px]" strokeWidth={2} />
           View storefront
         </Link>
+
+        {/* Signed in as {email} · Log out (RequireAdmin guarantees a user here) */}
+        {user && (
+          <div className="mt-[8px] flex items-center gap-[6px] border-t border-black/5 px-[12px] pt-[12px] text-[13px]">
+            <span className="min-w-0 truncate text-gray-500" title={user.email || user.phone}>
+              Signed in as <span className="font-semibold text-[#1F2937]">{user.email || user.phone}</span>
+            </span>
+            <span aria-hidden="true" className="text-gray-400">·</span>
+            <button
+              type="button"
+              onClick={logout}
+              className="shrink-0 font-semibold text-red-600 hover:underline"
+            >
+              Log out
+            </button>
+          </div>
+        )}
       </div>
     </nav>
   );

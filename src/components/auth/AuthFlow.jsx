@@ -8,15 +8,16 @@ import { useAuthStore } from "@/store/useAuthStore";
 export default function AuthFlow({ onClose }) {
   const [step, setStep] = useState("auth"); // "auth" | "otp"
   const [contact, setContact] = useState(null);
-  const setUser = useAuthStore((s) => s.setUser);
+  const setSession = useAuthStore((s) => s.setSession);
 
   const handleCodeSent = (contactInfo) => {
     setContact(contactInfo);
     setStep("otp");
   };
 
-  const handleVerified = (user) => {
-    setUser(user);
+  // session: { token, user } from POST /auth/verify-otp
+  const handleVerified = (session) => {
+    setSession(session);
     onClose();
   };
 
