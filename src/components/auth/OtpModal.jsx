@@ -2,17 +2,23 @@
 
 import { useState, useRef } from "react";
 import { X } from "lucide-react";
+import { getAuthErrorMessage, requestOtp, verifyOtp } from "@/lib/auth";
+import { maskPhone } from "@/lib/phone";
 
+// contact: { type: "email" | "phone", value, dial? } from AuthModal.
+// For phone, value is international (e.g. +2348031234567) and dial its country code.
 export default function OtpModal({ contact, onClose, onVerified }) {
   const [digits, setDigits] = useState(["", "", "", ""]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [resending, setResending] = useState(false);
+  const [notice, setNotice] = useState(""); // "A new code has been sent."
   const inputsRef = useRef([]);
 
   const maskedContact =
     contact.type === "email"
       ? contact.value.replace(/^(.).*(@.*)$/, "$1****$2")
-      : contact.value.replace(/^(\+?\d{1,3})\d+(\d{3})$/, "$1 *** $2");
+      : maskPhone(contact.value, contact.dial); // "+234 *** 567"
 
   const code = digits.join("");
   const isComplete = digits.every((d) => d !== "");
@@ -20,6 +26,7 @@ export default function OtpModal({ contact, onClose, onVerified }) {
   const handleChange = (index, val) => {
     if (!/^\d?$/.test(val)) return; // block non-digit keystrokes
     setError("");
+    setNotice("");
     const next = [...digits];
     next[index] = val;
     setDigits(next);
@@ -58,26 +65,34 @@ export default function OtpModal({ contact, onClose, onVerified }) {
     }
 
     setLoading(true);
-    // TODO: replace with real API call once backend is ready
-    // e.g. await fetch("/api/auth/verify-otp", { method: "POST", body: JSON.stringify({ ...contact, code }) })
-    await new Promise((resolve) => setTimeout(resolve, 600)); // simulate network delay
-    setLoading(false);
-
-    const fakeUser = {
-      id: `simulated-${Date.now()}`,
-      email: contact.type === "email" ? contact.value : null,
-      phone: contact.type === "phone" ? contact.value : null,
-      user_metadata: { full_name: deriveDisplayName(contact) },
-    };
-
-    onVerified(fakeUser);
+    setNotice("");
+    try {
+      // { token, user } -> AuthFlow stores the session and closes the modal.
+      const session = await verifyOtp(contact, code);
+      onVerified(session);
+    } catch (err) {
+      // "Incorrect code", "This code has expired. Request a new one", 429, network.
+      setError(getAuthErrorMessage(err));
+      setLoading(false);
+    }
   };
 
-  const handleResend = () => {
+  const handleResend = async () => {
+    if (resending) return;
     setError("");
-    setDigits(["", "", "", ""]);
-    inputsRef.current[0]?.focus();
-    // TODO: call real resend endpoint once backend is ready
+    setNotice("");
+    setResending(true);
+    try {
+      await requestOtp(contact);
+      setDigits(["", "", "", ""]);
+      setNotice("A new code has been sent.");
+      inputsRef.current[0]?.focus();
+    } catch (err) {
+      // 429 shows the API's cooldown message.
+      setError(getAuthErrorMessage(err));
+    } finally {
+      setResending(false);
+    }
   };
 
   return (
@@ -109,10 +124,13 @@ export default function OtpModal({ contact, onClose, onVerified }) {
           ))}
         </div>
         {error && <p className="mt-[12px] text-center text-[13px] text-red-600">{error}</p>}
+        {notice && !error && (
+          <p className="mt-[12px] text-center text-[13px] text-gray-500">{notice}</p>
+        )}
 
         <button
           onClick={handleVerify}
-          disabled={loading || !isComplete}
+          disabled={loading || resending || !isComplete}
           className="mt-[24px] w-full rounded-[10px] bg-[#3E5730] py-[14px] text-[15px] font-semibold text-white disabled:opacity-60"
         >
           {loading ? "Verifying..." : "Verify"}
@@ -120,22 +138,15 @@ export default function OtpModal({ contact, onClose, onVerified }) {
 
         <p className="mt-[16px] text-center text-[13px] text-gray-500">
           Didn&rsquo;t receive a code?{" "}
-          <button onClick={handleResend} className="font-semibold text-red-600">
-            Resend code
+          <button
+            onClick={handleResend}
+            disabled={resending}
+            className="font-semibold text-red-600 disabled:opacity-60"
+          >
+            {resending ? "Sending..." : "Resend code"}
           </button>
         </p>
       </div>
     </div>
   );
-}
-
-// Turns "balqees@gmail.com" -> "Balqees", or a phone number -> "User 6831"
-function deriveDisplayName(contact) {
-  if (contact.type === "email") {
-    const localPart = contact.value.split("@")[0];
-    const cleaned = localPart.replace(/[^a-zA-Z]/g, " ").trim().split(" ")[0] || localPart;
-    return cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
-  }
-  const digits = contact.value.replace(/\D/g, "");
-  return `User ${digits.slice(-4)}`;
 }

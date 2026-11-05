@@ -26,6 +26,7 @@ import AuthFlow from "@/components/auth/AuthFlow";
 import CartPanel from "@/components/cart/CartPanel";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useCartStore } from "@/store/useCartStore";
+import { logout, restoreSession } from "@/lib/auth";
 
 const TOP_BAR_ITEMS = [
   { icon: Leaf, label: "Free deliveries on orders over MXN $699" },
@@ -71,9 +72,7 @@ export default function Navbar() {
   const submitOnEndRef = useRef(false); // whether to auto-search once recognition ends
 
   const user = useAuthStore((s) => s.user);
-  const clearUser = useAuthStore((s) => s.clearUser);
   const items = useCartStore((s) => s.items);
-  const clearCart = useCartStore((s) => s.clearCart);
   const itemCount = items.reduce((sum, i) => sum + i.quantity, 0);
 
   const displayName =
@@ -105,11 +104,15 @@ export default function Navbar() {
 
   // Actually performs the logout — only called after the user confirms
   const confirmLogout = () => {
-    clearUser();
-    clearCart(); // cart is per-account; clear it on sign-out so the next user starts fresh
+    logout(); // clears the session and the cart (cart is per-account, so the next user starts fresh)
     setLogoutConfirmOpen(false);
     router.push("/");
   };
+
+  // On page load, confirm the stored token with GET /auth/me (a 401 logs out).
+  useEffect(() => {
+    restoreSession();
+  }, []);
 
   // Close the account dropdown on outside click
   useEffect(() => {
@@ -451,13 +454,19 @@ export default function Navbar() {
                 </span>
               </a>
               {user && (
-                <button
-                  onClick={handleLogoutClick}
-                  className="flex items-center gap-[10px] text-[16px] font-bold text-red-600"
-                >
-                  <LogOut className="h-[16px] w-[16px]" strokeWidth={2} />
-                  Log out
-                </button>
+                <>
+                  <p className="truncate text-[14px] text-gray-500">
+                    Signed in as{" "}
+                    <span className="font-semibold text-[#1F2937]">{user.email || user.phone}</span>
+                  </p>
+                  <button
+                    onClick={handleLogoutClick}
+                    className="flex items-center gap-[10px] text-[16px] font-bold text-red-600"
+                  >
+                    <LogOut className="h-[16px] w-[16px]" strokeWidth={2} />
+                    Log out
+                  </button>
+                </>
               )}
             </nav>
           </div>
