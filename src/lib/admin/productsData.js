@@ -1,8 +1,10 @@
 // Admin product data, backed by the Express API through src/lib/api.js.
 // The hooks keep a small zustand cache so the admin screens share one list.
-// SECURITY TODO: ADMIN_ENABLED only hides the admin UI. These requests go
-// straight from the browser to the API, so the Express API itself must check
-// for an authenticated admin on POST, PATCH and DELETE /products.
+// SECURITY: the admin UI is behind ADMIN_ENABLED (server kill switch) and
+// RequireAdmin (client role gate), but both only hide UI. These requests go
+// straight from the browser to the API with the user's Bearer token (api.js),
+// and the Express API is what enforces role === "admin" on POST, PATCH and
+// DELETE /products (401 without a valid token, 403 for non-admins).
 
 import { useEffect } from "react";
 import { create } from "zustand";
