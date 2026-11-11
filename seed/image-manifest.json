@@ -2,7 +2,7 @@
   {
     "productId": "broccoli",
     "field": "image",
-    "from": "src/assets/image/Frame 88.png",
+    "from": "src/assets/image/Frame 172.png",
     "to": "public/products/broccoli.webp",
     "maxWidth": 800
   },
@@ -23,15 +23,8 @@
   {
     "productId": "broccoli",
     "field": "gallery[2]",
-    "from": "src/assets/image/Frame 175.png",
-    "to": "public/products/broccoli-3.webp",
-    "maxWidth": 1200
-  },
-  {
-    "productId": "broccoli",
-    "field": "gallery[3]",
     "from": "src/assets/image/image 124.png",
-    "to": "public/products/broccoli-4.webp",
+    "to": "public/products/broccoli-3.webp",
     "maxWidth": 1200
   },
   {
@@ -72,7 +65,7 @@
   {
     "productId": "tomatoes",
     "field": "image",
-    "from": "src/assets/image/image 191.png",
+    "from": "src/assets/image/image 110.png",
     "to": "public/products/tomatoes.webp",
     "maxWidth": 800
   },
@@ -98,32 +91,32 @@
     "maxWidth": 800
   },
   {
-    "productId": "cabbage",
-    "field": "gallery[0]",
-    "from": "src/assets/image/Frame 172.png",
-    "to": "public/products/cabbage-1.webp",
-    "maxWidth": 1200
+    "productId": "croissant-4-pack",
+    "field": "image",
+    "from": "src/assets/image/ImageContainer.png",
+    "to": "public/products/croissant-4-pack.webp",
+    "maxWidth": 800
   },
   {
-    "productId": "cabbage",
-    "field": "gallery[1]",
-    "from": "src/assets/image/Frame 173.png",
-    "to": "public/products/cabbage-2.webp",
-    "maxWidth": 1200
+    "productId": "chicken-breast",
+    "field": "image",
+    "from": "src/assets/image/image 73.png",
+    "to": "public/products/chicken-breast.webp",
+    "maxWidth": 800
   },
   {
-    "productId": "cabbage",
-    "field": "gallery[2]",
-    "from": "src/assets/image/Frame 175.png",
-    "to": "public/products/cabbage-3.webp",
-    "maxWidth": 1200
+    "productId": "shrimp",
+    "field": "image",
+    "from": "src/assets/image/image 118.png",
+    "to": "public/products/shrimp.webp",
+    "maxWidth": 800
   },
   {
-    "productId": "cabbage",
-    "field": "gallery[3]",
-    "from": "src/assets/image/image 124.png",
-    "to": "public/products/cabbage-4.webp",
-    "maxWidth": 1200
+    "productId": "whole-milk",
+    "field": "image",
+    "from": "src/assets/image/image 71.png",
+    "to": "public/products/whole-milk.webp",
+    "maxWidth": 800
   },
   {
     "productId": "cucumber",
@@ -133,9 +126,16 @@
     "maxWidth": 800
   },
   {
+    "productId": "strawberries",
+    "field": "image",
+    "from": "src/assets/image/image 79.png",
+    "to": "public/products/strawberries.webp",
+    "maxWidth": 800
+  },
+  {
     "productId": "blueberries",
     "field": "image",
-    "from": "src/assets/image/image 87.png",
+    "from": "src/assets/image/image 79.png",
     "to": "public/products/blueberries.webp",
     "maxWidth": 800
   },
@@ -149,8 +149,15 @@
   {
     "productId": "bananas",
     "field": "image",
-    "from": "src/assets/image/image 111.png",
+    "from": "src/assets/image/image 191.png",
     "to": "public/products/bananas.webp",
+    "maxWidth": 800
+  },
+  {
+    "productId": "red-apples",
+    "field": "image",
+    "from": "src/assets/image/image 185.png",
+    "to": "public/products/red-apples.webp",
     "maxWidth": 800
   },
   {
@@ -170,7 +177,7 @@
   {
     "productId": "oranges",
     "field": "image",
-    "from": "src/assets/image/image 191.png",
+    "from": "src/assets/image/image 74.png",
     "to": "public/products/oranges.webp",
     "maxWidth": 800
   },
@@ -196,35 +203,13 @@
     "maxWidth": 800
   },
   {
-    "productId": "organic-milk",
-    "field": "image",
-    "from": "src/assets/image/image 71.png",
-    "to": "public/products/organic-milk.webp",
-    "maxWidth": 800
-  },
-  {
-    "productId": "organic-greek-yogurt",
-    "field": "image",
-    "from": "src/assets/image/Frame 92 (1).png",
-    "to": "public/products/organic-greek-yogurt.webp",
-    "maxWidth": 800
-  },
-  {
-    "productId": "creamy-almond-butter",
-    "field": "image",
-    "from": "src/assets/image/image 109.png",
-    "to": "public/products/creamy-almond-butter.webp",
-    "maxWidth": 800
-  },
-  {
     "productIds": [
       "artisan-sourdough-bread",
-      "croissant-4-pack",
       "chocolate-chip-cookies",
       "sourdough-bread"
     ],
     "field": "banner",
-    "from": "src/assets/image/ImageContainer.png",
+    "from": "src/assets/image/Frame 88.png",
     "to": "public/products/banners/bakery.webp",
     "maxWidth": 800
   },
@@ -247,7 +232,7 @@
       "frozen-ice-cubes"
     ],
     "field": "banner",
-    "from": "src/assets/image/Frame 90.png",
+    "from": "src/assets/image/Frame 89.png",
     "to": "public/products/banners/frozen-foods.webp",
     "maxWidth": 800
   },
@@ -255,9 +240,7 @@
     "productIds": [
       "salmon-fillet",
       "beef-ribeye-steak",
-      "chicken-breast",
       "ground-beef",
-      "shrimp",
       "lamb-chops",
       "pork-chops",
       "tuna-steak",
@@ -270,13 +253,12 @@
       "beef-brisket"
     ],
     "field": "banner",
-    "from": "src/assets/image/Frame 91.png",
+    "from": "src/assets/image/Frame 90.png",
     "to": "public/products/banners/meat-seafood.webp",
     "maxWidth": 800
   },
   {
     "productIds": [
-      "whole-milk",
       "cheddar-cheese",
       "free-range-eggs",
       "greek-yogurt",
@@ -290,10 +272,11 @@
       "heavy-cream",
       "feta-cheese",
       "duck-eggs",
-      "chocolate-milk"
+      "chocolate-milk",
+      "organic-greek-yogurt"
     ],
     "field": "banner",
-    "from": "src/assets/image/Frame 92.png",
+    "from": "src/assets/image/Frame 91.png",
     "to": "public/products/banners/dairy-eggs.webp",
     "maxWidth": 800
   },
@@ -313,30 +296,12 @@
       "smoothie-mix",
       "cranberry-juice",
       "root-beer",
-      "pineapple-juice"
+      "pineapple-juice",
+      "ground-arabica-coffee"
     ],
     "field": "banner",
     "from": "src/assets/image/image 55.png",
     "to": "public/products/banners/beverages.webp",
-    "maxWidth": 800
-  },
-  {
-    "productIds": [
-      "green-grapes",
-      "strawberries",
-      "pineapple",
-      "kiwi",
-      "red-apples",
-      "peaches",
-      "pears",
-      "cherries",
-      "plums",
-      "lemons",
-      "limes"
-    ],
-    "field": "banner",
-    "from": "src/assets/image/image 85.png",
-    "to": "public/products/banners/fruits.webp",
     "maxWidth": 800
   },
   {
@@ -355,20 +320,12 @@
       "nuts-mix",
       "fruit-gummies",
       "beef-jerky",
-      "chocolate-wafers"
+      "chocolate-wafers",
+      "creamy-almond-butter"
     ],
     "field": "banner",
     "from": "src/assets/image/Frame 94.png",
     "to": "public/products/banners/snacks.webp",
-    "maxWidth": 800
-  },
-  {
-    "productIds": [
-      "ground-arabica-coffee"
-    ],
-    "field": "banner",
-    "from": "src/assets/image/image 133.png",
-    "to": "public/products/banners/party-essentials.webp",
     "maxWidth": 800
   }
 ]

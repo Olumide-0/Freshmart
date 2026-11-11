@@ -21,7 +21,7 @@ import AuthFlow from "@/components/auth/AuthFlow";
 import CustomQuantityModal from "@/components/cart/CustomQuantityModal";
 import BasketSummary from "@/components/cart/BasketSummary";
 import { formatUnitPrice, formatWeight, productImage } from "@/lib/products";
-import { cartTotalWeightKg, lineTotal } from "@/lib/cart";
+import { cartTotalWeightKg, freeDeliveryProgress, lineTotal } from "@/lib/cart";
 
 const BADGE_STYLES = {
   "In season": "bg-[#E6F0E1] text-[#3E5730]",
@@ -84,6 +84,7 @@ export default function CartView({ relatedProducts = [] }) {
   );
 
   const totalWeight = cartTotalWeightKg(items);
+  const delivery = freeDeliveryProgress(subtotal);
 
   const handleCheckout = () => {
     if (!agreed) return;
@@ -154,17 +155,20 @@ export default function CartView({ relatedProducts = [] }) {
                 <div className="mb-[10px] flex items-center justify-between">
                   <p className="text-[16px] text-[#1F2937] sm:text-[15px]">
                     You&rsquo;re{" "}
-                    <span className="font-bold">MXN 120</span> away from{" "}
+                    <span className="font-bold">MXN {delivery.remaining}</span> away from{" "}
                     <span className="font-bold">FREE</span> delivery
                   </p>
 
                   <span className="text-[16px] font-extrabold text-[#1F2937]">
-                    78%
+                    {delivery.percent}%
                   </span>
                 </div>
 
                 <div className="h-[8px] w-full overflow-hidden rounded-[8px] bg-[#E9E4D8]">
-                  <div className="h-[8px] w-[78%] rounded-[8px] bg-[#3E5730]" />
+                  <div
+                    className="h-[8px] rounded-[8px] bg-[#3E5730]"
+                    style={{ width: `${delivery.percent}%` }}
+                  />
                 </div>
               </div>
 

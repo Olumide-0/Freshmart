@@ -27,17 +27,88 @@ const WEBP_QUALITY = 80;
 const MAX_WIDTH = 800;
 const MAX_WIDTH_GALLERY = 1200;
 
-// Shared banner files: products without their own photo all point at one file per banner.
-// Named after what the banner shows; any banner not listed falls back to its file name.
-const BANNER_NAMES = {
-  "ImageContainer.png": "bakery",
-  "Frame 90.png": "frozen-foods",
-  "Frame 91.png": "meat-seafood",
-  "Frame 92.png": "dairy-eggs",
-  "image 55.png": "beverages",
-  "image 85.png": "fruits",
-  "Frame 94.png": "snacks",
-  "image 133.png": "party-essentials", // the party-essentials occasion banner (used by Ground Arabica Coffee)
+// ---------------------------------------------------------------------------
+// Images (every file below was opened and checked by eye)
+// ---------------------------------------------------------------------------
+
+// The real category tiles, as the home page's "Shop by department" uses them.
+// A visible product without a photo of its own shows its category's tile, one shared
+// file per category in public/products/banners/<category>.webp.
+// Fruits has no tile (the site shows a cucumber photo there), so fruits without a
+// photo get the placeholder instead of another product's photo.
+const CATEGORY_TILES = {
+  "fresh-produce": "Frame 92.png", // "Fresh Produce" tile (broccoli, potato, tomato)
+  "bakery": "Frame 88.png", // "Bakery" tile (breads)
+  "frozen-foods": "Frame 89.png", // "Frozen Foods" tile (ice cream)
+  "meat-seafood": "Frame 90.png", // "Meat & Sea Foods" tile (salmon, beef)
+  "dairy-eggs": "Frame 91.png", // "Dairy & Eggs" tile (milk, cheese, eggs)
+  "beverages": "image 55.png", // Beverages tile (water, soda can, orange juice), no label
+  "snacks": "Frame 94.png", // "Snacks" tile
+  "fruits": null,
+};
+
+// Tiles and occasion banners: never used as a product's own photo.
+const NOT_PRODUCT_PHOTOS = new Set([
+  ...Object.values(CATEGORY_TILES).filter(Boolean),
+  "image 85.png", // the site's Fruits tile stand-in (a cucumber photo); the old data put it on 15 fruits
+  "Frame 92 (1).png", // "Breakfast" occasion tile
+  "Frame 92 (2).png", // "All categories" tile
+  "Frame 102.png", // occasion tiles (healthy living, mexican, seasonal)
+  "Frame 103.png",
+  "Frame 107.png",
+  "image 61.png", // back-to-school occasion tile (lunch box)
+  "image 133.png", // party-essentials occasion tile (empanadas)
+  "image 134.png", // BBQ occasion tile
+]);
+
+// Served by the site (public/products/placeholder.svg); not created by this script.
+const PLACEHOLDER_IMAGE = "/products/placeholder.svg";
+const USE_PLACEHOLDER = "placeholder";
+
+// Per-product photo decisions, by product id. A file name is the product's own photo
+// (it may be shared with a product of the same kind); null means "no photo of its own",
+// so the product shows its category tile, or the placeholder for fruits;
+// USE_PLACEHOLDER skips the category tile too.
+// Products not listed use their first source image that is not a tile, which was
+// checked to be the right picture.
+const IMAGE_OVERRIDES = {
+  // Wrong picture in the old data
+  "broccoli": "Frame 172.png", // was the "Bakery" tile; now its first gallery photo
+  "tomatoes": "image 110.png", // was bananas (image 191)
+  "bananas": "image 191.png", // was mangoes (image 111)
+  "oranges": "image 74.png", // was bananas (image 191); basket of oranges
+  "blueberries": "image 79.png", // was tomatoes (image 87); mixed berries photo
+  "strawberries": "image 79.png", // was tomatoes / cucumbers; mixed berries photo
+  "red-apples": "image 185.png", // was cucumbers; same red apples photo as organic-apples
+  "shrimp": "image 118.png", // was the "Dairy & Eggs" tile; shrimp photo
+  "chicken-breast": "image 73.png", // was the "Dairy & Eggs" tile; packed chicken breast
+  "whole-milk": "image 71.png", // was the "Fresh Produce" tile; the bottle reads "Whole Milk"
+  "organic-milk": USE_PLACEHOLDER, // the only milk photo is a non-organic whole milk bottle
+  "chicken-wings": null, // its source photo (image 118) is shrimp
+  // Only had the croissant photo (ImageContainer.png); croissant-4-pack keeps it.
+  "artisan-sourdough-bread": null,
+  "chocolate-chip-cookies": null,
+  "sourdough-bread": null,
+  // Source photo shows something else
+  "creamy-almond-butter": null, // image 109: peppers, tomatoes, lime, onion
+  "ground-arabica-coffee": null, // image 133: empanadas (party-essentials tile)
+  "organic-greek-yogurt": null, // Frame 92 (1): "Breakfast" occasion tile
+  // Fruits whose only source image was the cucumber photo (image 85)
+  "green-grapes": null,
+  "pineapple": null,
+  "kiwi": null,
+  "peaches": null,
+  "pears": null,
+  "cherries": null,
+  "plums": null,
+  "lemons": null,
+  "limes": null,
+};
+
+// Gallery decisions, by product id (replaces the source gallery).
+const GALLERY_OVERRIDES = {
+  "cabbage": [], // its source gallery is broccoli's four photos
+  "broccoli": ["Frame 172.png", "Frame 173.png", "image 124.png"], // Frame 175 dropped: the Fresh Produce tile picture
 };
 
 // ---------------------------------------------------------------------------
@@ -212,17 +283,6 @@ const mdEscape = (text) => String(text).replace(/\|/g, "\\|");
 // ---------------------------------------------------------------------------
 
 function exportProducts() {
-  // "Banner" images: one file used for 3+ different product names (category/occasion
-  // banners). Computed on the raw data so the rule is the same one shown in the plan.
-  const namesByImage = new Map();
-  for (const { items } of SOURCES) {
-    for (const item of items) {
-      if (!namesByImage.has(item.image)) namesByImage.set(item.image, new Set());
-      namesByImage.get(item.image).add(item.name.toLowerCase());
-    }
-  }
-  const bannerImages = new Set([...namesByImage].filter(([, names]) => names.size >= 3).map(([img]) => img));
-
   // Merge by cleaned, aliased, case-insensitive name, in source order.
   const merged = new Map();
   const droppedBakery = [];
@@ -284,9 +344,10 @@ function exportProducts() {
   const usedIds = new Set();
   const products = [];
   const manifest = [];
-  const banners = new Map(); // banner name -> { from, productIds }
+  const banners = new Map(); // category -> { from, productIds }
   const review = {
     hidden: [],
+    images: [],
     needsPhoto: [],
     differentImages: [],
     categoryConflicts: [],
@@ -326,47 +387,69 @@ function exportProducts() {
     for (let n = 2; usedIds.has(id); n++) id = `${slugify(p.name)}-${n}`;
     usedIds.add(id);
 
-    const realImages = p.images.filter((img) => !bannerImages.has(img));
-    const chosen = realImages[0] ?? p.images[0];
-    const usesBanner = !realImages.length;
+    // Image: override, else the first source image that is not a tile. Without a
+    // photo, the category tile (one shared file per category), else the placeholder.
+    const imageOverridden = Object.hasOwn(IMAGE_OVERRIDES, id);
+    const forcePlaceholder = imageOverridden && IMAGE_OVERRIDES[id] === USE_PLACEHOLDER;
+    const photo = forcePlaceholder
+      ? null
+      : imageOverridden
+        ? IMAGE_OVERRIDES[id]
+        : p.images.find((img) => !NOT_PRODUCT_PHOTOS.has(img)) ?? null;
+    const tile = !forcePlaceholder && category ? CATEGORY_TILES[category] ?? null : null;
+    const galleryFiles = Object.hasOwn(GALLERY_OVERRIDES, id) ? GALLERY_OVERRIDES[id] : p.gallery ?? [];
 
     let image = "";
     let gallery = [];
     if (available) {
-      if (usesBanner) {
-        // One shared file per banner instead of a copy per product.
-        const bannerName = BANNER_NAMES[chosen] ?? slugify(chosen.replace(/\.[^.]+$/, ""));
-        if (!banners.has(bannerName)) banners.set(bannerName, { from: `${ASSET_DIR}/${chosen}`, productIds: [] });
-        const banner = banners.get(bannerName);
-        if (banner.from !== `${ASSET_DIR}/${chosen}`) {
-          throw new Error(`Banner name "${bannerName}" is used for two different files: ${banner.from} and ${chosen}`);
-        }
-        banner.productIds.push(id);
-        image = `/products/banners/${bannerName}.webp`;
-        review.needsPhoto.push({ id, name: p.name, banner: chosen, bannerFile: `banners/${bannerName}.webp`, category });
-      } else {
+      let kind;
+      if (photo) {
+        kind = "photo";
         image = `/products/${id}.webp`;
-        manifest.push({ productId: id, field: "image", from: `${ASSET_DIR}/${chosen}`, to: `${PUBLIC_DIR}/${id}.webp`, maxWidth: MAX_WIDTH });
-      }
-      if (p.gallery) {
-        gallery = p.gallery.map((file, i) => {
-          const to = `${PUBLIC_DIR}/${id}-${i + 1}.webp`;
-          manifest.push({ productId: id, field: `gallery[${i}]`, from: `${ASSET_DIR}/${file}`, to, maxWidth: MAX_WIDTH_GALLERY });
-          return `/products/${id}-${i + 1}.webp`;
+        manifest.push({ productId: id, field: "image", from: `${ASSET_DIR}/${photo}`, to: `${PUBLIC_DIR}/${id}.webp`, maxWidth: MAX_WIDTH });
+      } else if (tile) {
+        kind = "tile";
+        if (!banners.has(category)) banners.set(category, { from: `${ASSET_DIR}/${tile}`, productIds: [] });
+        banners.get(category).productIds.push(id);
+        image = `/products/banners/${category}.webp`;
+        review.needsPhoto.push({ id, name: p.name, category, shows: `category tile (\`${tile}\`)`, file: `banners/${category}.webp` });
+      } else {
+        kind = "placeholder";
+        image = PLACEHOLDER_IMAGE;
+        review.needsPhoto.push({
+          id,
+          name: p.name,
+          category,
+          shows: forcePlaceholder ? "placeholder (override)" : "placeholder (no tile, no photo)",
+          file: "placeholder.svg",
         });
       }
+      gallery = galleryFiles.map((file, i) => {
+        const to = `${PUBLIC_DIR}/${id}-${i + 1}.webp`;
+        manifest.push({ productId: id, field: `gallery[${i}]`, from: `${ASSET_DIR}/${file}`, to, maxWidth: MAX_WIDTH_GALLERY });
+        return `/products/${id}-${i + 1}.webp`;
+      });
+      review.images.push({
+        id,
+        name: p.name,
+        category,
+        kind,
+        file: photo ?? tile ?? null,
+        overridden: imageOverridden,
+        sources: p.images,
+        gallery: galleryFiles,
+      });
     }
 
     if (!available) {
       review.hidden.push({ id, name: p.name, reason: placeholder ? "placeholder" : "off the shelf", occasions: p.occasions });
     }
 
+    const chosen = photo ?? tile;
     const otherImages = p.images.filter((img) => img !== chosen);
     if (available && otherImages.length) {
       review.differentImages.push(
-        `${p.name}: uses \`${chosen}\`${usesBanner ? " (banner)" : ""}; not used: ${otherImages
-          .map((img) => `\`${img}\`${bannerImages.has(img) ? " (banner)" : ""}`)
-          .join(", ")}`
+        `${p.name}: uses \`${chosen ?? "placeholder"}\`; not used: ${otherImages.map((img) => `\`${img}\``).join(", ")}`
       );
     }
 
@@ -404,13 +487,11 @@ function exportProducts() {
 
   // Shared galleries (same files used by more than one product).
   const galleryOwners = new Map();
-  for (const product of products) {
-    const p = merged.get(keyOf(product.name)) ?? [...merged.values()].find((m) => m.name === product.name);
-    if (p?.gallery) {
-      const sig = p.gallery.join("|");
-      if (!galleryOwners.has(sig)) galleryOwners.set(sig, []);
-      galleryOwners.get(sig).push(product.name);
-    }
+  for (const { name, gallery } of review.images) {
+    if (!gallery.length) continue;
+    const sig = gallery.join("|");
+    if (!galleryOwners.has(sig)) galleryOwners.set(sig, []);
+    galleryOwners.get(sig).push(name);
   }
   const sharedGalleries = [...galleryOwners.values()].filter((names) => names.length > 1);
 
@@ -438,6 +519,8 @@ function exportProducts() {
     imagesOwnPhoto: count(manifest, (e) => e.field === "image"),
     imagesGallery: count(manifest, (e) => e.field.startsWith("gallery")),
     imagesBanner: count(manifest, (e) => e.field === "banner"),
+    usingTile: count(review.images, (i) => i.kind === "tile"),
+    usingPlaceholder: count(review.images, (i) => i.kind === "placeholder"),
   };
 
   // ---- write seed/ ----
@@ -446,14 +529,14 @@ function exportProducts() {
   writeFileSync(join(SEED_DIR, "image-manifest.json"), `${JSON.stringify(manifest, null, 2)}\n`);
   writeFileSync(
     join(SEED_DIR, "REVIEW.md"),
-    buildReview({ counts, review, droppedBakery, appliedFixes, appliedAliases, sharedGalleries, bannerImages, products })
+    buildReview({ counts, review, droppedBakery, appliedFixes, appliedAliases, sharedGalleries, products })
   );
 
   console.log("Wrote seed/products.json, seed/image-manifest.json, seed/REVIEW.md (no images copied).");
   console.log(JSON.stringify(counts, null, 2));
 }
 
-function buildReview({ counts, review, droppedBakery, appliedFixes, appliedAliases, sharedGalleries, bannerImages, products }) {
+function buildReview({ counts, review, droppedBakery, appliedFixes, appliedAliases, sharedGalleries, products }) {
   const lines = [];
   const add = (...l) => lines.push(...l);
   const table = (header, rows) => {
@@ -480,7 +563,9 @@ function buildReview({ counts, review, droppedBakery, appliedFixes, appliedAlias
     ["Image files to create (image-manifest.json)", counts.manifestFiles],
     ["… own photos (max 800px)", counts.imagesOwnPhoto],
     ["… gallery images (max 1200px)", counts.imagesGallery],
-    ["… shared banners (max 800px)", counts.imagesBanner],
+    ["… shared category tiles (max 800px)", counts.imagesBanner],
+    ["Visible products showing a category tile", counts.usingTile],
+    ["Visible products showing the placeholder", counts.usingPlaceholder],
   ]);
   add(`All images are converted to WebP, quality ${WEBP_QUALITY}, resized down only (never upscaled).`, "");
   add("### Per collection (visible / total)", "");
@@ -514,18 +599,33 @@ function buildReview({ counts, review, droppedBakery, appliedFixes, appliedAlias
   add("**Other hidden products** (image `\"\"`):", "");
   table(["id", "Name", "Reason"], others.map((h) => [h.id, h.name, h.reason]));
 
-  add("## Needs a real photo (visible, using a shared banner image)", "");
+  add("## Images of visible products", "");
   add(
-    `${review.needsPhoto.length} products. They share one file per banner in \`public/products/banners/\`. To give one a real photo, add \`public/products/<id>.webp\` and change its \`image\`.`,
+    "Rule: an entry in `IMAGE_OVERRIDES`, else the first source image that is not a category or occasion tile. " +
+      "Without a photo: the category tile (`CATEGORY_TILES`), else the placeholder. Every file was checked by eye.",
     ""
   );
   table(
-    ["id", "Name", "Category", "Banner source", "Shared file"],
-    review.needsPhoto.map((n) => [n.id, n.name, n.category ?? "-", n.banner, n.bannerFile])
+    ["id", "Category", "Shows", "Source file", "Override", "Gallery"],
+    review.images.map((i) => [
+      i.id,
+      i.category ?? "-",
+      i.kind,
+      i.file ? `\`${i.file}\`` : "-",
+      i.overridden ? "yes" : "",
+      i.gallery.length ? i.gallery.map((g) => `\`${g}\``).join(", ") : "",
+    ])
   );
 
+  add("## Needs a real photo (visible, showing a category tile or the placeholder)", "");
+  add(
+    `${review.needsPhoto.length} products. To give one a real photo, add it under \`src/assets/image/\`, set it in \`IMAGE_OVERRIDES\` and regenerate.`,
+    ""
+  );
+  table(["id", "Name", "Category", "Shows", "File"], review.needsPhoto.map((n) => [n.id, n.name, n.category ?? "-", n.shows, n.file]));
+
   add("## Same name, different images", "");
-  add("The first non-banner image in source order is used.", "");
+  add("The chosen image is listed first; the others from the source data are not used.", "");
   list(review.differentImages);
   add("### Shared galleries", "");
   list(sharedGalleries.map((names) => `${names.join(" and ")} use the same gallery files`));
@@ -558,7 +658,7 @@ function buildReview({ counts, review, droppedBakery, appliedFixes, appliedAlias
   list([
     "`src/data/groceries.js` (GROCERIES) and its `/groceries/[slug]` route: dropped.",
     "`src/data/groceriesTeaser.js`: stays as promo cards in the site code. Suggested links: Sweet Mangoes (×2) → `sweet-mangoes`, Local Lettuce → `lettuce`, Cucumbers → `cucumber`.",
-    `Banner image files (shared by 3+ names): ${[...bannerImages].map((b) => `\`${b}\``).join(", ")}.`,
+    `Tile and occasion images, never used as a product photo: ${[...NOT_PRODUCT_PHOTOS].map((b) => `\`${b}\``).join(", ")}.`,
   ]);
 
   add("## Missing source image files", "");

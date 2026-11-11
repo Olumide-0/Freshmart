@@ -11,6 +11,20 @@ export function lineTotal(item) {
   return formatAmount(Number(item.price) * item.quantity);
 }
 
+// Matches the top banner: "Free deliveries on orders over MXN $699".
+export const FREE_DELIVERY_THRESHOLD = 699;
+
+// { remaining: "657", percent: 6 } for a 42 subtotal; { remaining: "0", percent: 100 } at 699+.
+// percent rounds down so the bar never shows 100% while money is still missing.
+export function freeDeliveryProgress(subtotal) {
+  const total = Math.max(0, Number(subtotal) || 0);
+  const left = Math.max(0, FREE_DELIVERY_THRESHOLD - total);
+  return {
+    remaining: formatAmount(Math.round(left * 100) / 100),
+    percent: left === 0 ? 100 : Math.min(99, Math.floor((total / FREE_DELIVERY_THRESHOLD) * 100)),
+  };
+}
+
 const KG_PER_UNIT = { g: 0.001, kg: 1, lb: 0.453592, lbs: 0.453592 };
 const WEIGHT_UNITS = ["g", "kg"];
 
