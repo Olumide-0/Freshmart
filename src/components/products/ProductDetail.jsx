@@ -77,7 +77,14 @@ export default function ProductDetail({ product }) {
         {/* Left: image gallery */}
         <div>
           <div className="relative aspect-square w-full overflow-hidden rounded-[16px] bg-white">
-            <Image src={activeImage} alt={product.name} fill className="object-cover" />
+            <Image
+              src={activeImage}
+              alt={product.name}
+              fill
+              loading="eager"
+              sizes="(max-width: 1024px) 100vw, 50vw"
+              className="object-cover"
+            />
           </div>
 
           <div className="mt-[16px] grid grid-cols-4 gap-[12px]">
@@ -89,7 +96,13 @@ export default function ProductDetail({ product }) {
                   activeImage === img ? "ring-2 ring-[#3E5730]" : ""
                 }`}
               >
-                <Image src={img} alt={`${product.name} thumbnail ${i + 1}`} fill className="object-cover" />
+                <Image
+                  src={img}
+                  alt={`${product.name} thumbnail ${i + 1}`}
+                  fill
+                  sizes="(max-width: 1024px) 25vw, 12vw"
+                  className="object-cover"
+                />
               </button>
             ))}
           </div>

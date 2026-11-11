@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
@@ -51,6 +51,9 @@ const VOICE_LANGUAGES = [
   { code: "de-DE", label: "Deutsch" },
 ];
 
+// Speech support is fixed for the page's lifetime: nothing to subscribe to.
+const noopSubscribe = () => () => {};
+
 export default function Navbar() {
   const router = useRouter();
   const [query, setQuery] = useState("");
@@ -64,7 +67,13 @@ export default function Navbar() {
 
   // --- Voice search state ---
   const [isListening, setIsListening] = useState(false);
-  const [voiceSupported, setVoiceSupported] = useState(true);
+  // Browser support never changes, so read it instead of setting state in an effect.
+  // The server snapshot is `true`, the same first render as before (no hydration mismatch).
+  const voiceSupported = useSyncExternalStore(
+    noopSubscribe,
+    () => Boolean(window.SpeechRecognition || window.webkitSpeechRecognition),
+    () => true
+  );
   const [voiceLang, setVoiceLang] = useState("en-US"); // default: English
   const [langMenuOpen, setLangMenuOpen] = useState(false);
   const [isTranslating, setIsTranslating] = useState(false);
@@ -167,10 +176,7 @@ export default function Navbar() {
       typeof window !== "undefined" &&
       (window.SpeechRecognition || window.webkitSpeechRecognition);
 
-    if (!SpeechRecognition) {
-      setVoiceSupported(false);
-      return;
-    }
+    if (!SpeechRecognition) return; // voiceSupported is already false
 
     const recognition = new SpeechRecognition();
     recognition.continuous = false;
@@ -570,7 +576,7 @@ export default function Navbar() {
                     fill="none"
                   />
                 </svg>
-                No, I'm joking
+                No, I&apos;m joking
               </button>
             </div>
           </div>

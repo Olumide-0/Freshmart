@@ -10,6 +10,7 @@ import { useEffect } from "react";
 import { create } from "zustand";
 import api from "@/lib/api";
 import { CATEGORY_LABELS } from "@/lib/categories";
+import { OCCASION_LABELS } from "@/lib/occasions";
 
 export const LOW_STOCK_THRESHOLD = 10;
 
@@ -20,10 +21,47 @@ export const CATEGORIES = Object.entries(CATEGORY_LABELS).map(([value, label]) =
 
 export const BADGES = ["In season", "Low in stock", "Off season"];
 
-export const CTA_OPTIONS = [
-  { value: "cart", label: "Add to cart" },
-  { value: "add", label: "Add" },
+// Same lists the API accepts (COLLECTIONS, OCCASIONS, UNITS in freshmart-api/products.js).
+export const COLLECTIONS = [
+  { value: "fresh-groceries", label: "Fresh groceries" },
+  { value: "popular", label: "Popular (home page)" },
+  { value: "popular-this-week", label: "Popular this week" },
+  { value: "deals", label: "Deals (needs an old price)" },
+  { value: "cart-related", label: "Cart: You may also like" },
 ];
+
+export const OCCASIONS = [
+  "breakfast",
+  "healthy-living",
+  "mexican-favourites",
+  "seasonal-specials",
+  "party-essentials",
+  "back-to-school",
+  "bbq-grills",
+].map((value) => ({ value, label: OCCASION_LABELS[value] ?? value }));
+
+export const UNITS = ["g", "kg", "ml", "l", "piece"];
+
+// How each API field name is written at the start of an error message.
+// "oldPrice must be greater than price" is shown as "Old price must be greater than price".
+const FIELD_LABELS = {
+  name: "Name",
+  price: "Price",
+  oldPrice: "Old price",
+  category: "Category",
+  collections: "Collections",
+  occasions: "Occasions",
+  stock: "Stock",
+  image: "Image",
+  gallery: "Gallery",
+  badge: "Badge",
+  weight: "Weight",
+  unit: "Unit",
+  available: "Available",
+};
+
+const isBlank = (v) => v === "" || v === null || v === undefined;
+const listOf = (allowed) => (v) => Array.isArray(v) && v.every((x) => allowed.some((a) => a.value === x));
 
 export const STOCK_STATUSES = [
   { value: "in", label: "In stock" },
@@ -70,7 +108,26 @@ export function validateProduct(data) {
 
   if (!CATEGORY_LABELS[data.category]) errors.category = "Choose a category";
   if (data.badge && !BADGES.includes(data.badge)) errors.badge = "Choose a valid badge";
-  if (!CTA_OPTIONS.some((o) => o.value === data.cta)) errors.cta = "Choose a button type";
+
+  // The fields below use the API's own messages (with the field name in words).
+  if (!isBlank(data.oldPrice)) {
+    const oldPrice = Number(data.oldPrice);
+    if (!Number.isFinite(oldPrice)) errors.oldPrice = "Old price must be a number or null";
+    else if (Number.isFinite(price) && !errors.price && !(oldPrice > price))
+      errors.oldPrice = "Old price must be greater than price";
+  }
+
+  if (!listOf(COLLECTIONS)(data.collections ?? []))
+    errors.collections = `Collections must be a list using only: ${COLLECTIONS.map((c) => c.value).join(", ")}`;
+  if (!listOf(OCCASIONS)(data.occasions ?? []))
+    errors.occasions = `Occasions must be a list using only: ${OCCASIONS.map((o) => o.value).join(", ")}`;
+
+  if (!isBlank(data.weight)) {
+    const weight = Number(data.weight);
+    if (!Number.isFinite(weight) || weight <= 0) errors.weight = "Weight must be a number greater than 0, or null";
+  }
+  if (!isBlank(data.unit) && !UNITS.includes(data.unit))
+    errors.unit = `Unit must be one of: ${UNITS.join(", ")}, or null`;
 
   // Image is optional: empty means "use the placeholder". Only check the format when set.
   const image = typeof data.image === "string" ? data.image.trim() : data.image;
@@ -84,7 +141,7 @@ export function validateProduct(data) {
 }
 
 // --- API errors ----------------------------------------------------------
-const API_FIELDS = ["name", "price", "category", "stock", "image", "gallery", "badge", "cta", "available"];
+const API_FIELDS = Object.keys(FIELD_LABELS);
 
 // One readable message from an axios error: 400 { errors: [...] } or { error }.
 export function getApiErrorMessage(error) {
@@ -101,7 +158,8 @@ export function getApiErrorMessage(error) {
 }
 
 // Splits a 400's errors[] into { fieldErrors: { price: "Price must be..." }, otherErrors: [...] }.
-// Each API message starts with the field name, e.g. "price must be a number, 0 or more".
+// Each API message starts with the field name, e.g. "price must be a number, 0 or more";
+// the name is swapped for its label ("Price must be…", "Old price must be…").
 function getApiFieldErrors(error) {
   const list = error?.response?.status === 400 ? error.response.data?.errors : null;
   const fieldErrors = {};
@@ -110,7 +168,7 @@ function getApiFieldErrors(error) {
     const message = String(raw);
     const field = API_FIELDS.find((f) => message === f || message.startsWith(`${f} `));
     if (field && !fieldErrors[field]) {
-      fieldErrors[field] = message.charAt(0).toUpperCase() + message.slice(1);
+      fieldErrors[field] = FIELD_LABELS[field] + message.slice(field.length);
     } else {
       otherErrors.push(message);
     }
@@ -148,7 +206,11 @@ function fromApi(p) {
     image: p.image ?? "",
     gallery: Array.isArray(p.gallery) ? p.gallery : [],
     badge: p.badge || null,
-    cta: p.cta || "cart",
+    oldPrice: p.oldPrice ?? null,
+    collections: Array.isArray(p.collections) ? p.collections : [],
+    occasions: Array.isArray(p.occasions) ? p.occasions : [],
+    weight: p.weight ?? null,
+    unit: p.unit ?? null,
     available: p.available ?? true,
     createdAt: Date.parse(p.createdAt) || 0,
     updatedAt: Date.parse(p.updatedAt) || 0,
@@ -166,7 +228,12 @@ function toApiBody(data) {
   if ("image" in data) body.image = toImageString(data.image);
   if ("gallery" in data) body.gallery = (data.gallery ?? []).map(toImageString);
   if ("badge" in data) body.badge = data.badge ? String(data.badge) : "";
-  if ("cta" in data) body.cta = String(data.cta ?? "");
+  // Optional numbers and the unit: empty means null (the API's "not set").
+  if ("oldPrice" in data) body.oldPrice = isBlank(data.oldPrice) ? null : Number(data.oldPrice);
+  if ("collections" in data) body.collections = [...(data.collections ?? [])];
+  if ("occasions" in data) body.occasions = [...(data.occasions ?? [])];
+  if ("weight" in data) body.weight = isBlank(data.weight) ? null : Number(data.weight);
+  if ("unit" in data) body.unit = isBlank(data.unit) ? null : data.unit;
   if ("available" in data) body.available = Boolean(data.available);
   return body;
 }

@@ -1,3 +1,12 @@
+// RETIRED (November 2026): kept for reference only.
+// The storefront now reads every product from the Express API, and products are
+// edited in the admin. src/data/ (this script's input) has been deleted, so the
+// export can no longer run. Do not recreate it: re-exporting and reseeding with
+// --update would overwrite changes made in the admin.
+// Source of truth: the API's database. seed/products.json, seed/image-manifest.json
+// and seed/REVIEW.md are the last snapshot this script produced.
+// --copy-images still works: it only reads seed/image-manifest.json and src/assets/image/.
+//
 // Dev-only export of the storefront's hard-coded product data into one seed for
 // the Express API. The Next.js app never imports this file.
 //
@@ -241,15 +250,18 @@ const CART_RELATED = [
 
 // Source order = priority order (first value wins for category, badge, image).
 // GROCERIES (src/data/groceries.js) and GROCERIES_TEASER are intentionally not exported.
-const SOURCES = [
-  { source: "product.js", items: loadDataFile("product.js"), collection: null },
-  { source: "freshGroceries.js", items: loadDataFile("freshGroceries.js"), collection: "fresh-groceries" },
-  { source: "popularThisWeek.js", items: loadDataFile("popularThisWeek.js"), collection: "popular-this-week" },
-  { source: "popular.js", items: loadDataFile("popular.js"), collection: "popular" },
-  { source: "occasionProducts.js", items: loadDataFile("occasionProducts.js"), collection: null },
-  { source: "groceries/hero.js deals", items: DEALS, collection: "deals" },
-  { source: "cart/page.jsx related", items: CART_RELATED, collection: "cart-related" },
-];
+// Loaded only when exporting, so --copy-images still runs without src/data/.
+function loadSources() {
+  return [
+    { source: "product.js", items: loadDataFile("product.js"), collection: null },
+    { source: "freshGroceries.js", items: loadDataFile("freshGroceries.js"), collection: "fresh-groceries" },
+    { source: "popularThisWeek.js", items: loadDataFile("popularThisWeek.js"), collection: "popular-this-week" },
+    { source: "popular.js", items: loadDataFile("popular.js"), collection: "popular" },
+    { source: "occasionProducts.js", items: loadDataFile("occasionProducts.js"), collection: null },
+    { source: "groceries/hero.js deals", items: DEALS, collection: "deals" },
+    { source: "cart/page.jsx related", items: CART_RELATED, collection: "cart-related" },
+  ];
+}
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -288,6 +300,16 @@ const mdEscape = (text) => String(text).replace(/\|/g, "\\|");
 // ---------------------------------------------------------------------------
 
 function exportProducts() {
+  // Retired: src/data/ was deleted once the storefront moved to the API (see the top of this file).
+  if (!existsSync(join(ROOT, "src/data"))) {
+    console.error(
+      "This export is retired: src/data/ no longer exists. Products live in the API and are edited in the admin.\n" +
+        "seed/products.json is the last snapshot. Nothing was written."
+    );
+    process.exit(1);
+  }
+  const SOURCES = loadSources();
+
   // Merge by cleaned, aliased, case-insensitive name, in source order.
   const merged = new Map();
   const droppedBakery = [];

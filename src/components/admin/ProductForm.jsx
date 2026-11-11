@@ -7,7 +7,9 @@ import { ArrowLeft, CloudOff, Loader2, Package, Plus, RefreshCw, X } from "lucid
 import {
   BADGES,
   CATEGORIES,
-  CTA_OPTIONS,
+  COLLECTIONS,
+  OCCASIONS,
+  UNITS,
   createProduct,
   isImageRef,
   reloadProduct,
@@ -48,6 +50,47 @@ function Field({ id, label, optional, hint, error, children }) {
         <p id={`${id}-error`} className="text-sm text-red-500">{error}</p>
       )}
     </div>
+  );
+}
+
+// A labelled group of checkboxes (collections, occasions). The first checkbox
+// gets the group id so a validation error can focus it.
+function CheckboxGroup({ id, legend, hint, options, selected, onToggle, error }) {
+  return (
+    <fieldset
+      className="flex flex-col gap-[6px]"
+      aria-describedby={error ? `${id}-error` : hint ? `${id}-hint` : undefined}
+    >
+      <legend className="mb-[6px] text-[14px] font-semibold text-[#1F2937]">
+        {legend}
+        <span className="ml-[4px] font-normal text-gray-500">(optional)</span>
+      </legend>
+      <div className="grid gap-[8px] sm:grid-cols-2">
+        {options.map((o, i) => (
+          <label
+            key={o.value}
+            className={`flex cursor-pointer items-center gap-[8px] rounded-[8px] border bg-white px-[12px] py-[10px] text-[14px] text-[#1F2937] ${
+              error ? "border-red-500" : "border-gray-200"
+            }`}
+          >
+            <input
+              id={i === 0 ? id : undefined}
+              type="checkbox"
+              checked={selected.includes(o.value)}
+              onChange={() => onToggle(o.value)}
+              className="h-[16px] w-[16px] accent-[#2F5D3A]"
+            />
+            {o.label}
+          </label>
+        ))}
+      </div>
+      {hint && !error && (
+        <p id={`${id}-hint`} className="text-[13px] text-gray-500">{hint}</p>
+      )}
+      {error && (
+        <p id={`${id}-error`} className="text-sm text-red-500">{error}</p>
+      )}
+    </fieldset>
   );
 }
 
@@ -147,7 +190,11 @@ function FormBody({ product }) {
     category: product?.category ?? "",
     stock: product ? String(product.stock) : "",
     badge: product?.badge ?? "",
-    cta: product?.cta ?? "cart",
+    oldPrice: product?.oldPrice != null ? String(product.oldPrice) : "",
+    weight: product?.weight != null ? String(product.weight) : "",
+    unit: product?.unit ?? "",
+    collections: product?.collections ?? [],
+    occasions: product?.occasions ?? [],
     available: product?.available ?? true,
     imageInput: "", // empty = keep the current image (edit) / placeholder (new)
   }));
@@ -171,7 +218,11 @@ function FormBody({ product }) {
     category: values.category,
     stock: values.stock.trim(),
     badge: values.badge,
-    cta: values.cta,
+    oldPrice: values.oldPrice.trim(),
+    collections: values.collections,
+    occasions: values.occasions,
+    weight: values.weight.trim(),
+    unit: values.unit,
     available: values.available,
     image: typedImage || currentImage || "",
     gallery: gallery.map((g) => g.value),
@@ -194,6 +245,17 @@ function FormBody({ product }) {
   const setField = (field) => (e) => {
     setValues((v) => ({ ...v, [field]: e.target.value }));
     clearApiError(field === "imageInput" ? "image" : field);
+    // The API checks oldPrice against price, so editing either clears both.
+    if (field === "price") clearApiError("oldPrice");
+  };
+
+  // Adds or removes one value of a checkbox list (collections, occasions).
+  const toggleIn = (field) => (value) => {
+    setValues((v) => ({
+      ...v,
+      [field]: v[field].includes(value) ? v[field].filter((x) => x !== value) : [...v[field], value],
+    }));
+    clearApiError(field);
   };
 
   const addGalleryImage = () => {
@@ -236,10 +298,14 @@ function FormBody({ product }) {
       category: candidate.category,
       stock: candidate.stock,
       badge: candidate.badge,
-      cta: candidate.cta,
+      oldPrice: candidate.oldPrice,
+      collections: candidate.collections,
+      occasions: candidate.occasions,
+      weight: candidate.weight,
+      unit: candidate.unit,
       available: candidate.available,
       gallery: candidate.gallery,
-      // All nine fields are sent; an edit keeps the current image unless a new one was typed.
+      // Every field is sent; an edit keeps the current image unless a new one was typed.
       image: typedImage || currentImage,
     };
 
@@ -335,6 +401,63 @@ function FormBody({ product }) {
             </Field>
           </div>
 
+          <div className="grid gap-[16px] sm:grid-cols-3">
+            <Field
+              id="pf-oldPrice"
+              label="Old price (MXN)"
+              optional
+              hint="Shown crossed out; must be higher than the price."
+              error={errors.oldPrice}
+            >
+              <div className="relative">
+                <span className="pointer-events-none absolute left-[12px] top-1/2 -translate-y-1/2 text-[14px] font-semibold text-gray-500">
+                  $
+                </span>
+                <input
+                  id="pf-oldPrice"
+                  type="text"
+                  inputMode="decimal"
+                  value={values.oldPrice}
+                  onChange={setField("oldPrice")}
+                  placeholder="0.00"
+                  aria-invalid={Boolean(errors.oldPrice)}
+                  aria-describedby={describedBy("pf-oldPrice", errors.oldPrice, true)}
+                  className={`${inputClass(errors.oldPrice)} pl-[26px]`}
+                />
+              </div>
+            </Field>
+
+            <Field id="pf-weight" label="Weight" optional error={errors.weight}>
+              <input
+                id="pf-weight"
+                type="text"
+                inputMode="decimal"
+                value={values.weight}
+                onChange={setField("weight")}
+                placeholder="e.g. 1 or 500"
+                aria-invalid={Boolean(errors.weight)}
+                aria-describedby={describedBy("pf-weight", errors.weight)}
+                className={inputClass(errors.weight)}
+              />
+            </Field>
+
+            <Field id="pf-unit" label="Unit" optional error={errors.unit}>
+              <select
+                id="pf-unit"
+                value={values.unit}
+                onChange={setField("unit")}
+                aria-invalid={Boolean(errors.unit)}
+                aria-describedby={describedBy("pf-unit", errors.unit)}
+                className={inputClass(errors.unit)}
+              >
+                <option value="">No unit</option>
+                {UNITS.map((u) => (
+                  <option key={u} value={u}>{u}</option>
+                ))}
+              </select>
+            </Field>
+          </div>
+
           <div className="grid gap-[16px] sm:grid-cols-2">
             <Field id="pf-category" label="Category" error={errors.category}>
               <select
@@ -369,20 +492,24 @@ function FormBody({ product }) {
             </Field>
           </div>
 
-          <Field id="pf-cta" label="Storefront button" hint="Label on the product card button." error={errors.cta}>
-            <select
-              id="pf-cta"
-              value={values.cta}
-              onChange={setField("cta")}
-              aria-invalid={Boolean(errors.cta)}
-              aria-describedby={describedBy("pf-cta", errors.cta, true)}
-              className={inputClass(errors.cta)}
-            >
-              {CTA_OPTIONS.map((o) => (
-                <option key={o.value} value={o.value}>{o.label}</option>
-              ))}
-            </select>
-          </Field>
+          <CheckboxGroup
+            id="pf-collections"
+            legend="Collections"
+            hint="Storefront sections that list this product."
+            options={COLLECTIONS}
+            selected={values.collections}
+            onToggle={toggleIn("collections")}
+            error={errors.collections}
+          />
+
+          <CheckboxGroup
+            id="pf-occasions"
+            legend="Occasions"
+            options={OCCASIONS}
+            selected={values.occasions}
+            onToggle={toggleIn("occasions")}
+            error={errors.occasions}
+          />
         </div>
 
         {/* Side column */}
