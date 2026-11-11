@@ -168,6 +168,11 @@ const BADGE_OVERRIDES = {
   "tomatoes": "Low in stock",
 };
 
+// Collections added by hand, by product id (on top of the ones from the source data).
+const EXTRA_COLLECTIONS = {
+  "chicken-breast": ["popular"], // 3rd "Popular this week" card on the home page
+};
+
 // Demo weight/unit per category (approved as demo values).
 const UNIT_BY_CATEGORY = {
   "fresh-produce": { weight: 1, unit: "kg" },
@@ -462,7 +467,7 @@ function exportProducts() {
       price: PRICE,
       oldPrice: p.oldPrice,
       category,
-      collections: p.collections,
+      collections: [...new Set([...p.collections, ...(EXTRA_COLLECTIONS[id] ?? [])])],
       occasions: p.occasions,
       badge,
       stock,

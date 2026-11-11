@@ -542,7 +542,9 @@
     "price": 42,
     "oldPrice": null,
     "category": "meat-seafood",
-    "collections": [],
+    "collections": [
+      "popular"
+    ],
     "occasions": [],
     "badge": null,
     "stock": 24,

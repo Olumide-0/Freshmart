@@ -26,7 +26,7 @@ All images are converted to WebP, quality 80, resized down only (never upscaled)
 | Collection | Visible / total |
 |---|---|
 | fresh-groceries | 14 / 14 |
-| popular | 2 / 2 |
+| popular | 3 / 3 |
 | popular-this-week | 9 / 9 |
 | deals | 3 / 3 |
 | cart-related | 4 / 4 |

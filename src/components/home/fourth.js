@@ -2,7 +2,18 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { GROCERIES_TEASER } from "@/data/groceriesTeaser";
+import mango from "../../assets/image/image 82.png";
+import lettuce from "../../assets/image/image 84.png";
+import cucumber from "../../assets/image/image 85 (1).png";
+import tomato from "../../assets/image/image 87.png";
+
+// Promo cards (not products): each links to a real product id in the API.
+const GROCERIES_TEASER = [
+  { title: "Sweet Mangoes", subtitle: "Harvested this week", image: mango, productId: "sweet-mangoes" },
+  { title: "Local Lettuce", subtitle: "Crisp, fresh, local", image: lettuce, productId: "lettuce" },
+  { title: "Fresh Tomatoes", subtitle: "Picked fresh, everyday", image: tomato, productId: "tomatoes" },
+  { title: "Cucumbers", subtitle: "Crips, always fresh", image: cucumber, productId: "cucumber" },
+];
 
 export default function Fourth() {
   return (
@@ -27,10 +38,10 @@ export default function Fourth() {
       </div>
 
       <div className="mt-[20px] grid grid-cols-2 gap-[14px] sm:mt-[24px] sm:gap-[18px] md:grid-cols-3 lg:grid-cols-4 lg:gap-[24px] xl:mt-[28px]">
-        {GROCERIES_TEASER.map(({ title, subtitle, image, slug }, i) => (
+        {GROCERIES_TEASER.map(({ title, subtitle, image, productId }, i) => (
           <Link
             key={i}
-            href={`/groceries-teaser-product/${slug}`}
+            href={`/product/${productId}`}
             className="relative flex h-[150px] flex-col justify-end overflow-hidden rounded-2xl sm:h-[165px] md:h-[178px] lg:h-[190px]"
           >
             <Image

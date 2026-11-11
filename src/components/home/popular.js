@@ -3,25 +3,27 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowRight, Heart, Star, CheckCircle2, X } from "lucide-react";
+import { ArrowRight, Heart, CheckCircle2, X } from "lucide-react";
 import produceBasket from "../../assets/image/image 74.png";
 import juices from "../../assets/image/image 77.png";
 import berries from "../../assets/image/image 79.png";
-import { POPULAR } from "@/data/popular";
 import { useCartStore } from "@/store/useCartStore";
-import { productImage } from "@/lib/products";
+import { formatWeight, productImage } from "@/lib/products";
 
-export default function Popular() {
+// products: the API's "popular" collection, fetched on the server by app/page.js.
+export default function Popular({ products = [] }) {
   const [toast, setToast] = useState(false);
   const addItem = useCartStore((s) => s.addItem);
 
   const handleAddToCart = (product) => {
     addItem({
-      id: product.slug,
+      id: product.id,
       name: product.name,
       image: product.image,
-      price: Number(product.price.replace(/[^0-9.]/g, "")),
-      badge: null,
+      price: product.price,
+      badge: product.badge,
+      weight: product.weight,
+      unit: product.unit,
     });
     setToast(true);
     setTimeout(() => setToast(false), 2500);
@@ -71,18 +73,21 @@ export default function Popular() {
           <div className="mt-[20px] grid grid-cols-1 gap-[16px] sm:grid-cols-2 sm:gap-[18px] lg:grid-cols-3 lg:gap-[8px] xl:mt-[28px]">
 
 
-            {POPULAR.map((product, i) => (
+            {products.map((product) => (
               <div
-                key={i}
+                key={product.id}
                 className="relative flex h-full flex-col rounded-2xl bg-white p-[16px] shadow-sm"
               >
                 <Link
-                  href={`/popular-product/${product.slug}`}
+                  href={`/product/${product.id}`}
                   className="relative block"
                 >
                   <Image
                     src={productImage(product.image)}
                     alt={product.name}
+                    width={400}
+                    height={400}
+                    sizes="(max-width: 640px) 100vw, (max-width: 1280px) 33vw, 15vw"
                     className="h-[150px] w-full rounded-xl object-cover sm:h-[170px] lg:h-[190px]"
                   />
                 </Link>
@@ -92,40 +97,24 @@ export default function Popular() {
                   className="absolute right-[8px] top-[8px] flex h-[32px] w-[32px] items-center justify-center rounded-full bg-white shadow sm:h-[38px] sm:w-[38px]"
                 >
                   <Heart
-                    className={`h-[16px] w-[16px] sm:h-[18px] sm:w-[18px] ${product.liked
-                        ? "fill-[#C42A2E] text-[#C42A2E]"
-                        : "text-[#C42A2E]"
-                      }`}
+                    className="h-[16px] w-[16px] text-[#C42A2E] sm:h-[18px] sm:w-[18px]"
                     strokeWidth={2}
                   />
                 </button>
 
-                <Link href={`/popular-product/${product.slug}`}>
+                <Link href={`/product/${product.id}`}>
                   <p className="mt-[16px] text-[15px] font-bold text-[#1F2937] hover:underline sm:text-[16px] lg:text-[17px]">
                     {product.name}
                   </p>
                 </Link>
 
                 <p className="mt-[6px] text-[13px] text-[#4C545F] sm:text-[14px] lg:text-[15px]">
-                  {product.weight}
+                  {formatWeight(product)}
                 </p>
-
-                <div className="mt-[8px] flex items-center gap-[6px]">
-                  {Array.from({ length: 5 }).map((_, idx) => (
-                    <Star
-                      key={idx}
-                      className="h-[14px] w-[14px] fill-[#D89B4A] text-[#D89B4A]"
-                    />
-                  ))}
-
-                  <span className="text-[12px] text-[#8F949B] sm:text-[13px] lg:text-[14px]">
-                    {product.rating} ({product.reviews})
-                  </span>
-                </div>
 
                 <div className="mt-[14px] flex items-baseline gap-[6px]">
                   <span className="text-[20px] font-extrabold text-[#1F2937] sm:text-[22px] lg:text-[24px]">
-                    {product.price}
+                    ${product.price}
                   </span>
 
                   <span className="text-[12px] text-[#8F949B] sm:text-[13px]">
