@@ -1,11 +1,17 @@
 import Categories from "@/components/groceries/categories"
 import Hero from "@/components/groceries/hero"
 import Second from "@/components/groceries/second"
+import { getProducts } from "@/lib/products"
 import { ChevronRight } from "lucide-react"
 import Link from "next/link"
 
 
-export default function GroceriesPage() {
+export default async function GroceriesPage() {
+  const [deals, products] = await Promise.all([
+    getProducts({ collection: "deals" }),
+    getProducts(),
+  ])
+
   return (
     <main className="bg-[#F5EEE2] py-[24px]  ">
       {/* Breadcrumb */}
@@ -16,9 +22,9 @@ export default function GroceriesPage() {
         <ChevronRight className="h-4 w-4 text-gray-400" />
         <span className="font-medium text-[#C6672E]">Shop groceries</span>
       </div>
-      <Hero />
+      <Hero deals={deals} />
       <Second/>
-      <Categories/>
+      <Categories products={products} />
     </main>
   )
 }

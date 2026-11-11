@@ -5,17 +5,14 @@ import Image from "next/image";
 import Link from "next/link";
 import {
   Heart,
-  Star,
-  Plus,
   ChevronDown,
   ChevronLeft,
   ChevronRight,
   CheckCircle2,
   X,
 } from "lucide-react";
-import { PRODUCTS } from "@/data/product";
 import { useCartStore } from "@/store/useCartStore";
-import { productImage } from "@/lib/products";
+import { formatWeight, productImage } from "@/lib/products";
 
 const BADGE_STYLES = {
   "In season": "bg-[#E6F0E1] text-[#3E5730]",
@@ -25,27 +22,30 @@ const BADGE_STYLES = {
 
 const PAGE_SIZE = 15;
 
-export default function Categories() {
+// products: every available product from the API, fetched by app/groceries/page.js.
+export default function Categories({ products = [] }) {
   const [toast, setToast] = useState(false);
   const [page, setPage] = useState(1);
   const addItem = useCartStore((s) => s.addItem);
 
   const handleAddToCart = (product) => {
     addItem({
-      id: product.slug,
+      id: product.id,
       name: product.name,
       image: product.image,
       price: product.price,
       badge: product.badge,
+      weight: product.weight,
+      unit: product.unit,
     });
     setToast(true);
     setTimeout(() => setToast(false), 2500);
   };
 
-  const totalPages = Math.max(1, Math.ceil(PRODUCTS.length / PAGE_SIZE));
+  const totalPages = Math.max(1, Math.ceil(products.length / PAGE_SIZE));
   const startIndex = (page - 1) * PAGE_SIZE;
-  const endIndex = Math.min(startIndex + PAGE_SIZE, PRODUCTS.length);
-  const visibleProducts = PRODUCTS.slice(startIndex, endIndex);
+  const endIndex = Math.min(startIndex + PAGE_SIZE, products.length);
+  const visibleProducts = products.slice(startIndex, endIndex);
 
   const goToPage = (p) => {
     const clamped = Math.max(1, Math.min(totalPages, p));
@@ -99,7 +99,7 @@ export default function Categories() {
             All categories
           </h1>
           <p className="mt-1 sm:mt-[6px] text-xs sm:text-[14px] text-gray-500">
-            Showing {startIndex + 1}-{endIndex} of {PRODUCTS.length} products
+            Showing {products.length ? startIndex + 1 : 0}-{endIndex} of {products.length} products
           </p>
         </div>
 
@@ -114,14 +114,14 @@ export default function Categories() {
 
       {/* Responsive Product Grid */}
       <div className="mt-5 sm:mt-[24px] grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4 md:gap-[20px]">
-        {visibleProducts.map((product, i) => (
+        {visibleProducts.map((product) => (
           <div
-            key={i}
+            key={product.id}
             className="relative flex flex-col overflow-hidden rounded-[14px] bg-white transition-shadow hover:shadow-md"
           >
             {/* Image Container */}
             <Link
-              href={`/product/${product.slug}`}
+              href={`/product/${product.id}`}
               className="relative block aspect-square w-full bg-gray-50"
             >
               <Image
@@ -155,29 +155,12 @@ export default function Categories() {
 
             {/* Details Section */}
             <div className="flex flex-1 flex-col p-3 sm:p-4">
-              <Link href={`/product/${product.slug}`}>
+              <Link href={`/product/${product.id}`}>
                 <h3 className="line-clamp-1 text-sm sm:text-[16px] font-bold text-[#1F2937] hover:underline">
                   {product.name}
                 </h3>
               </Link>
-              <p className="mt-0.5 text-xs sm:text-[13px] text-gray-500">1g</p>
-
-              {/* Ratings */}
-              <div className="mt-1.5 sm:mt-[6px] flex items-center gap-1 sm:gap-[6px]">
-                <div className="flex text-[#E3A008]">
-                  {Array.from({ length: 4 }).map((_, idx) => (
-                    <Star
-                      key={idx}
-                      className="h-3 w-3 sm:h-[13px] sm:w-[13px]"
-                      fill="currentColor"
-                      strokeWidth={0}
-                    />
-                  ))}
-                </div>
-                <span className="text-[11px] sm:text-[13px] text-gray-500">
-                  4.9 (312)
-                </span>
-              </div>
+              <p className="mt-0.5 text-xs sm:text-[13px] text-gray-500">{formatWeight(product)}</p>
 
               {/* Price */}
               <div className="mt-2 sm:mt-[8px] flex items-baseline gap-1 sm:gap-[6px]">
@@ -194,14 +177,7 @@ export default function Categories() {
                 onClick={() => handleAddToCart(product)}
                 className="mt-3 sm:mt-[14px] flex w-full items-center justify-center gap-1 sm:gap-[6px] rounded-[8px] bg-[#3E5730] py-2 sm:py-[10px] text-xs sm:text-[14px] font-semibold text-white transition-colors hover:bg-[#324724] active:scale-[0.98]"
               >
-                {product.cta === "add" ? (
-                  <>
-                    <Plus className="h-3.5 w-3.5 sm:h-[14px] sm:w-[14px]" strokeWidth={2.5} />
-                    Add
-                  </>
-                ) : (
-                  "Add to cart"
-                )}
+                Add to cart
               </button>
             </div>
           </div>
