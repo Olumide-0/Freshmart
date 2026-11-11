@@ -1,13 +1,28 @@
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { OCCASION_LABELS } from "@/lib/occasions";
-import { OCCASION_PRODUCTS } from "@/data/occasionProducts";
+import { getProducts } from "@/lib/products";
 import ProductGrid from "@/components/products/productGrid";
 
 export default async function OccasionCategoryPage({ params }) {
   const { occasion: slug } = await params;
   const occasionLabel = OCCASION_LABELS[slug] ?? "Products";
-  const items = OCCASION_PRODUCTS.filter((p) => p.occasion === slug);
+  const items = await getProducts({ occasion: slug });
+
+  const emptyMessage = (
+    <>
+      <p className="text-[15px] font-semibold text-[#1F2937]">
+        We&rsquo;re still stocking up for {occasionLabel.toLowerCase()}.
+      </p>
+      <p className="mt-[6px] text-[14px]">
+        Check back soon, or{" "}
+        <Link href="/groceries" className="font-semibold text-[#3E5730] underline underline-offset-2">
+          browse all groceries
+        </Link>
+        .
+      </p>
+    </>
+  );
 
   return (
     <div className="w-full bg-[#F6F0E3] px-4 py-5 sm:px-8 md:px-12 xl:py-6">
@@ -36,7 +51,7 @@ export default async function OccasionCategoryPage({ params }) {
       </h1>
 
       {/* Products */}
-      <ProductGrid products={items} basePath="/occasion-product" />
+      <ProductGrid products={items} emptyMessage={emptyMessage} />
     </div>
   );
 }

@@ -5,6 +5,8 @@ import Link from "next/link";
 import { X, ShoppingBasket } from "lucide-react";
 import { useCartStore } from "@/store/useCartStore";
 import Crate from "../../assets/image/empty Cart image.png";
+import { lineTotal } from "@/lib/cart";
+import { productImage } from "@/lib/products";
 
 export default function CartPanel({ onClose }) {
   const items = useCartStore((s) => s.items);
@@ -43,17 +45,19 @@ export default function CartPanel({ onClose }) {
           <div className="flex flex-col gap-[16px] px-[28px] pb-[28px]">
             {items.map((item) => (
               <div
-                key={item.id}
+                key={item.lineId}
                 className="flex items-center gap-[14px] border-b border-gray-100 pb-[16px]"
               >
                 <div className="relative h-[64px] w-[64px] shrink-0 overflow-hidden rounded-[10px]">
-                  <Image src={item.image} alt={item.name} fill className="object-cover" />
+                  <Image src={productImage(item.image)} alt={item.name} fill className="object-cover" />
                 </div>
                 <div className="flex-1">
-                  <p className="text-[15px] font-bold text-[#1F2937]">{item.name}</p>
+                  <p className="text-[15px] font-bold text-[#1F2937]">
+                    {item.name} · {item.selectedSize}
+                  </p>
                   <p className="text-[13px] text-gray-500">Qty: {item.quantity}</p>
                 </div>
-                <span className="text-[15px] font-extrabold text-[#1F2937]">${item.price}</span>
+                <span className="text-[15px] font-extrabold text-[#1F2937]">${lineTotal(item)}</span>
               </div>
             ))}
             <Link

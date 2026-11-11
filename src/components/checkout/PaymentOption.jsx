@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 export default function PaymentOption({
   name,
   image,
@@ -18,8 +20,8 @@ export default function PaymentOption({
           : "cursor-pointer border-gray-200 bg-white"
       }`}
     >
-      <img
-        src={image.src}
+      <Image
+        src={image}
         alt={name}
         className={`h-[24px] w-auto object-contain ${disabled ? "opacity-50 grayscale" : ""}`}
       />

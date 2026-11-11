@@ -1,16 +1,13 @@
-"use client";
-
-import { Suspense } from "react";
-import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
-import { searchProducts } from "@/lib/search";
+import { getProducts } from "@/lib/products";
 import ProductGrid from "@/components/products/productGrid";
 
-function SearchResults() {
-  const searchParams = useSearchParams();
-  const query = searchParams.get("q") ?? "";
-  const results = searchProducts(query);
+export default async function SearchPage({ searchParams }) {
+  const { q } = await searchParams;
+  const query = (Array.isArray(q) ? q[0] : q ?? "").trim();
+  // An empty search makes no request.
+  const results = query ? await getProducts({ q: query }) : [];
 
   return (
     <div className="w-full bg-[#F6F0E3] px-[120px] py-[24px]">
@@ -35,15 +32,7 @@ function SearchResults() {
         </p>
       )}
 
-      <ProductGrid products={results} basePath="/product" />
+      <ProductGrid products={results} emptyMessage={null} />
     </div>
-  );
-}
-
-export default function SearchPage() {
-  return (
-    <Suspense fallback={<div className="w-full bg-[#F6F0E3] px-[120px] py-[24px]" />}>
-      <SearchResults />
-    </Suspense>
   );
 }

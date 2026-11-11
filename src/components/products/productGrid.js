@@ -3,8 +3,9 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Heart, Star, Plus, CheckCircle2, X } from "lucide-react";
+import { Heart, CheckCircle2, X } from "lucide-react";
 import { useCartStore } from "@/store/useCartStore";
+import { formatWeight, productImage } from "@/lib/products";
 
 const BADGE_STYLES = {
   "In season": "bg-[#E6F0E1] text-[#3E5730]",
@@ -12,28 +13,28 @@ const BADGE_STYLES = {
   "Off season": "bg-[#FBE9D9] text-[#C6672E]",
 };
 
-export default function ProductGrid({ products, basePath = "/product" }) {
+// products: API products. emptyMessage: what to show when the list is empty
+// (text or JSX, e.g. a message with a link).
+export default function ProductGrid({ products = [], emptyMessage = "No products in this category yet." }) {
   const [toast, setToast] = useState(false);
   const addItem = useCartStore((s) => s.addItem);
 
   const handleAddToCart = (product) => {
     addItem({
-      id: product.slug,
+      id: product.id,
       name: product.name,
       image: product.image,
       price: product.price,
       badge: product.badge,
+      weight: product.weight,
+      unit: product.unit,
     });
     setToast(true);
     setTimeout(() => setToast(false), 2500);
   };
 
   if (!products.length) {
-    return (
-      <p className="mt-[40px] text-gray-500">
-        No products in this category yet.
-      </p>
-    );
+    return <div className="mt-[40px] text-gray-500">{emptyMessage}</div>;
   }
 
   return (
@@ -57,11 +58,11 @@ export default function ProductGrid({ products, basePath = "/product" }) {
       )}
 
       <div className="mt-[20px] grid grid-cols-2 gap-[14px] sm:mt-[24px] sm:gap-[16px] md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 xl:gap-[20px]">
-        {products.map((product, i) => (
-          <div key={i} className="relative flex flex-col overflow-hidden rounded-[14px] bg-white">
-            <Link href={product.slug ? `${basePath}/${product.slug}` : "#"} className="relative block aspect-square w-full">
+        {products.map((product) => (
+          <div key={product.id} className="relative flex flex-col overflow-hidden rounded-[14px] bg-white">
+            <Link href={`/product/${product.id}`} className="relative block aspect-square w-full">
               <Image
-                src={product.image}
+                src={productImage(product.image)}
                 alt={product.name}
                 fill
                 sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
@@ -80,19 +81,10 @@ export default function ProductGrid({ products, basePath = "/product" }) {
             </button>
 
             <div className="flex flex-1 flex-col px-[16px] py-[16px]">
-              <Link href={product.slug ? `${basePath}/${product.slug}` : "#"}>
+              <Link href={`/product/${product.id}`}>
                 <h3 className="text-[14px] font-bold text-[#1F2937] hover:underline sm:text-[15px] lg:text-[16px]">{product.name}</h3>
               </Link>
-              <p className="mt-[2px] text-[12px] text-gray-500 sm:text-[13px]">1g</p>
-
-              <div className="mt-[6px] flex items-center gap-[6px]">
-                <div className="flex text-[#E3A008]">
-                  {Array.from({ length: 4 }).map((_, idx) => (
-                    <Star key={idx} className="h-[13px] w-[13px]" fill="currentColor" strokeWidth={0} />
-                  ))}
-                </div>
-                <span className="text-[12px] text-gray-500 sm:text-[13px]">4.9 (312)</span>
-              </div>
+              <p className="mt-[2px] text-[12px] text-gray-500 sm:text-[13px]">{formatWeight(product)}</p>
 
               <div className="mt-[8px] flex items-baseline gap-[6px]">
                 <span className="text-[17px] font-extrabold text-[#1F2937] sm:text-[18px] lg:text-[20px]">${product.price}</span>
@@ -103,14 +95,7 @@ export default function ProductGrid({ products, basePath = "/product" }) {
                 onClick={() => handleAddToCart(product)}
                 className="mt-[14px] flex w-full items-center justify-center gap-[6px] rounded-[8px] bg-[#3E5730] py-[8px] text-[12px] font-semibold text-white sm:py-[10px] sm:text-[14px]"
               >
-                {product.cta === "add" ? (
-                  <>
-                    <Plus className="h-[14px] w-[14px]" strokeWidth={2.5} />
-                    Add
-                  </>
-                ) : (
-                  "Add to cart"
-                )}
+                Add to cart
               </button>
             </div>
           </div>

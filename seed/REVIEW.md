@@ -12,10 +12,12 @@ Nothing here is in the database yet, and no images have been copied.
 | Products after merging | 201 |
 | Visible (`available: true`) | 110 |
 | Hidden (`available: false`) | 91 |
-| Image files to create (image-manifest.json) | 39 |
-| … own photos (max 800px) | 19 |
-| … gallery images (max 1200px) | 12 |
-| … shared banners (max 800px) | 8 |
+| Image files to create (image-manifest.json) | 35 |
+| … own photos (max 800px) | 22 |
+| … gallery images (max 1200px) | 7 |
+| … shared category tiles (max 800px) | 6 |
+| Visible products showing a category tile | 78 |
+| Visible products showing the placeholder | 10 |
 
 All images are converted to WebP, quality 80, resized down only (never upscaled).
 
@@ -24,7 +26,7 @@ All images are converted to WebP, quality 80, resized down only (never upscaled)
 | Collection | Visible / total |
 |---|---|
 | fresh-groceries | 14 / 14 |
-| popular | 2 / 2 |
+| popular | 3 / 3 |
 | popular-this-week | 9 / 9 |
 | deals | 3 / 3 |
 | cart-related | 4 / 4 |
@@ -95,126 +97,300 @@ These would fail the admin's category check if edited. All are hidden placeholde
 |---|---|---|
 | whole-organic-milk | Whole Organic Milk | off the shelf |
 
-## Needs a real photo (visible, using a shared banner image)
+## Images of visible products
 
-91 products. They share one file per banner in `public/products/banners/`. To give one a real photo, add `public/products/<id>.webp` and change its `image`.
+Rule: an entry in `IMAGE_OVERRIDES`, else the first source image that is not a category or occasion tile. Without a photo: the category tile (`CATEGORY_TILES`), else the placeholder. Every file was checked by eye.
 
-| id | Name | Category | Banner source | Shared file |
+| id | Category | Shows | Source file | Override | Gallery |
+|---|---|---|---|---|---|
+| broccoli | fresh-produce | photo | `Frame 172.png` | yes | `Frame 172.png`, `Frame 173.png`, `image 124.png` |
+| fresh-mango | fresh-produce | photo | `image 111.png` |  | `image 82 (1).png`, `Frame 174.png`, `Frame 173 (1).png`, `Frame 175 (1).png` |
+| tomatoes | fresh-produce | photo | `image 110.png` | yes |  |
+| organic-avocado | fresh-produce | photo | `image 112.png` |  |  |
+| carrot | fresh-produce | photo | `image 113.png` |  |  |
+| cabbage | fresh-produce | photo | `image 114 (1).png` |  |  |
+| artisan-sourdough-bread | bakery | tile | `Frame 88.png` | yes |  |
+| croissant-4-pack | bakery | photo | `ImageContainer.png` |  |  |
+| chocolate-chip-cookies | bakery | tile | `Frame 88.png` | yes |  |
+| frozen-vanilla-ice-cream | frozen-foods | tile | `Frame 89.png` |  |  |
+| frozen-peas | frozen-foods | tile | `Frame 89.png` |  |  |
+| frozen-berries-mix | frozen-foods | tile | `Frame 89.png` |  |  |
+| frozen-pizza | frozen-foods | tile | `Frame 89.png` |  |  |
+| frozen-waffles | frozen-foods | tile | `Frame 89.png` |  |  |
+| frozen-yogurt | frozen-foods | tile | `Frame 89.png` |  |  |
+| frozen-corn | frozen-foods | tile | `Frame 89.png` |  |  |
+| frozen-fries | frozen-foods | tile | `Frame 89.png` |  |  |
+| frozen-dumplings | frozen-foods | tile | `Frame 89.png` |  |  |
+| frozen-mixed-vegetables | frozen-foods | tile | `Frame 89.png` |  |  |
+| frozen-chicken-nuggets | frozen-foods | tile | `Frame 89.png` |  |  |
+| frozen-spinach | frozen-foods | tile | `Frame 89.png` |  |  |
+| frozen-fruit-popsicles | frozen-foods | tile | `Frame 89.png` |  |  |
+| frozen-fish-fillet | frozen-foods | tile | `Frame 89.png` |  |  |
+| frozen-ice-cubes | frozen-foods | tile | `Frame 89.png` |  |  |
+| salmon-fillet | meat-seafood | tile | `Frame 90.png` |  |  |
+| beef-ribeye-steak | meat-seafood | tile | `Frame 90.png` |  |  |
+| chicken-breast | meat-seafood | photo | `image 73.png` | yes |  |
+| ground-beef | meat-seafood | tile | `Frame 90.png` |  |  |
+| shrimp | meat-seafood | photo | `image 118.png` | yes |  |
+| lamb-chops | meat-seafood | tile | `Frame 90.png` |  |  |
+| pork-chops | meat-seafood | tile | `Frame 90.png` |  |  |
+| tuna-steak | meat-seafood | tile | `Frame 90.png` |  |  |
+| turkey-breast | meat-seafood | tile | `Frame 90.png` |  |  |
+| bacon-strips | meat-seafood | tile | `Frame 90.png` |  |  |
+| crab-legs | meat-seafood | tile | `Frame 90.png` |  |  |
+| sausages | meat-seafood | tile | `Frame 90.png` |  |  |
+| chicken-wings | meat-seafood | tile | `Frame 90.png` | yes |  |
+| cod-fillet | meat-seafood | tile | `Frame 90.png` |  |  |
+| beef-brisket | meat-seafood | tile | `Frame 90.png` |  |  |
+| whole-milk | dairy-eggs | photo | `image 71.png` | yes |  |
+| cheddar-cheese | dairy-eggs | tile | `Frame 91.png` |  |  |
+| free-range-eggs | dairy-eggs | tile | `Frame 91.png` |  |  |
+| greek-yogurt | dairy-eggs | tile | `Frame 91.png` |  |  |
+| butter | dairy-eggs | tile | `Frame 91.png` |  |  |
+| mozzarella-cheese | dairy-eggs | tile | `Frame 91.png` |  |  |
+| cream-cheese | dairy-eggs | tile | `Frame 91.png` |  |  |
+| sour-cream | dairy-eggs | tile | `Frame 91.png` |  |  |
+| cottage-cheese | dairy-eggs | tile | `Frame 91.png` |  |  |
+| almond-milk | dairy-eggs | tile | `Frame 91.png` |  |  |
+| parmesan-cheese | dairy-eggs | tile | `Frame 91.png` |  |  |
+| heavy-cream | dairy-eggs | tile | `Frame 91.png` |  |  |
+| feta-cheese | dairy-eggs | tile | `Frame 91.png` |  |  |
+| duck-eggs | dairy-eggs | tile | `Frame 91.png` |  |  |
+| chocolate-milk | dairy-eggs | tile | `Frame 91.png` |  |  |
+| fresh-orange-juice | beverages | tile | `image 55.png` |  |  |
+| sparkling-water | beverages | tile | `image 55.png` |  |  |
+| apple-juice | beverages | tile | `image 55.png` |  |  |
+| cold-brew-coffee | beverages | tile | `image 55.png` |  |  |
+| green-tea | beverages | tile | `image 55.png` |  |  |
+| lemonade | beverages | tile | `image 55.png` |  |  |
+| grape-juice | beverages | tile | `image 55.png` |  |  |
+| energy-drink | beverages | tile | `image 55.png` |  |  |
+| coconut-water | beverages | tile | `image 55.png` |  |  |
+| iced-tea | beverages | tile | `image 55.png` |  |  |
+| mineral-water | beverages | tile | `image 55.png` |  |  |
+| smoothie-mix | beverages | tile | `image 55.png` |  |  |
+| cranberry-juice | beverages | tile | `image 55.png` |  |  |
+| root-beer | beverages | tile | `image 55.png` |  |  |
+| pineapple-juice | beverages | tile | `image 55.png` |  |  |
+| cucumber | fruits | photo | `image 85 (1).png` |  |  |
+| green-grapes | fruits | placeholder | - | yes |  |
+| strawberries | fruits | photo | `image 79.png` | yes |  |
+| blueberries | fruits | photo | `image 79.png` | yes |  |
+| pineapple | fruits | placeholder | - | yes |  |
+| watermelon | fruits | photo | `image 182.png` |  |  |
+| kiwi | fruits | placeholder | - | yes |  |
+| bananas | fruits | photo | `image 191.png` | yes |  |
+| red-apples | fruits | photo | `image 185.png` | yes |  |
+| peaches | fruits | placeholder | - | yes |  |
+| pears | fruits | placeholder | - | yes |  |
+| cherries | fruits | placeholder | - | yes |  |
+| plums | fruits | placeholder | - | yes |  |
+| lemons | fruits | placeholder | - | yes |  |
+| limes | fruits | placeholder | - | yes |  |
+| potato-chips | snacks | tile | `Frame 94.png` |  |  |
+| chocolate-bar | snacks | tile | `Frame 94.png` |  |  |
+| pretzel-sticks | snacks | tile | `Frame 94.png` |  |  |
+| popcorn | snacks | tile | `Frame 94.png` |  |  |
+| trail-mix | snacks | tile | `Frame 94.png` |  |  |
+| corn-chips | snacks | tile | `Frame 94.png` |  |  |
+| granola-bar | snacks | tile | `Frame 94.png` |  |  |
+| gummy-candy | snacks | tile | `Frame 94.png` |  |  |
+| cheese-puffs | snacks | tile | `Frame 94.png` |  |  |
+| rice-crackers | snacks | tile | `Frame 94.png` |  |  |
+| cookies | snacks | tile | `Frame 94.png` |  |  |
+| nuts-mix | snacks | tile | `Frame 94.png` |  |  |
+| fruit-gummies | snacks | tile | `Frame 94.png` |  |  |
+| beef-jerky | snacks | tile | `Frame 94.png` |  |  |
+| chocolate-wafers | snacks | tile | `Frame 94.png` |  |  |
+| sweet-mangoes | fruits | photo | `image 82.png` |  |  |
+| lettuce | fresh-produce | photo | `image 84.png` |  |  |
+| oranges | fruits | photo | `image 74.png` | yes |  |
+| organic-apples | fruits | photo | `image 185.png` |  |  |
+| bell-pepper | fresh-produce | photo | `image 189.png` |  |  |
+| milk | dairy-eggs | photo | `image 71.png` |  |  |
+| organic-milk | dairy-eggs | placeholder | - | yes |  |
+| organic-greek-yogurt | dairy-eggs | tile | `Frame 91.png` | yes |  |
+| sourdough-bread | bakery | tile | `Frame 88.png` | yes |  |
+| creamy-almond-butter | snacks | tile | `Frame 94.png` | yes |  |
+| ground-arabica-coffee | beverages | tile | `image 55.png` | yes |  |
+
+## Needs a real photo (visible, showing a category tile or the placeholder)
+
+88 products. To give one a real photo, add it under `src/assets/image/`, set it in `IMAGE_OVERRIDES` and regenerate.
+
+| id | Name | Category | Shows | File |
 |---|---|---|---|---|
-| artisan-sourdough-bread | Artisan Sourdough Bread | bakery | ImageContainer.png | banners/bakery.webp |
-| croissant-4-pack | Croissant (4-Pack) | bakery | ImageContainer.png | banners/bakery.webp |
-| chocolate-chip-cookies | Chocolate Chip Cookies | bakery | ImageContainer.png | banners/bakery.webp |
-| frozen-vanilla-ice-cream | Frozen Vanilla Ice Cream | frozen-foods | Frame 90.png | banners/frozen-foods.webp |
-| frozen-peas | Frozen Peas | frozen-foods | Frame 90.png | banners/frozen-foods.webp |
-| frozen-berries-mix | Frozen Berries Mix | frozen-foods | Frame 90.png | banners/frozen-foods.webp |
-| frozen-pizza | Frozen Pizza | frozen-foods | Frame 90.png | banners/frozen-foods.webp |
-| frozen-waffles | Frozen Waffles | frozen-foods | Frame 90.png | banners/frozen-foods.webp |
-| frozen-yogurt | Frozen Yogurt | frozen-foods | Frame 90.png | banners/frozen-foods.webp |
-| frozen-corn | Frozen Corn | frozen-foods | Frame 90.png | banners/frozen-foods.webp |
-| frozen-fries | Frozen Fries | frozen-foods | Frame 90.png | banners/frozen-foods.webp |
-| frozen-dumplings | Frozen Dumplings | frozen-foods | Frame 90.png | banners/frozen-foods.webp |
-| frozen-mixed-vegetables | Frozen Mixed Vegetables | frozen-foods | Frame 90.png | banners/frozen-foods.webp |
-| frozen-chicken-nuggets | Frozen Chicken Nuggets | frozen-foods | Frame 90.png | banners/frozen-foods.webp |
-| frozen-spinach | Frozen Spinach | frozen-foods | Frame 90.png | banners/frozen-foods.webp |
-| frozen-fruit-popsicles | Frozen Fruit Popsicles | frozen-foods | Frame 90.png | banners/frozen-foods.webp |
-| frozen-fish-fillet | Frozen Fish Fillet | frozen-foods | Frame 90.png | banners/frozen-foods.webp |
-| frozen-ice-cubes | Frozen Ice Cubes | frozen-foods | Frame 90.png | banners/frozen-foods.webp |
-| salmon-fillet | Salmon Fillet | meat-seafood | Frame 91.png | banners/meat-seafood.webp |
-| beef-ribeye-steak | Beef Ribeye Steak | meat-seafood | Frame 91.png | banners/meat-seafood.webp |
-| chicken-breast | Chicken Breast | meat-seafood | Frame 91.png | banners/meat-seafood.webp |
-| ground-beef | Ground Beef | meat-seafood | Frame 91.png | banners/meat-seafood.webp |
-| shrimp | Shrimp | meat-seafood | Frame 91.png | banners/meat-seafood.webp |
-| lamb-chops | Lamb Chops | meat-seafood | Frame 91.png | banners/meat-seafood.webp |
-| pork-chops | Pork Chops | meat-seafood | Frame 91.png | banners/meat-seafood.webp |
-| tuna-steak | Tuna Steak | meat-seafood | Frame 91.png | banners/meat-seafood.webp |
-| turkey-breast | Turkey Breast | meat-seafood | Frame 91.png | banners/meat-seafood.webp |
-| bacon-strips | Bacon Strips | meat-seafood | Frame 91.png | banners/meat-seafood.webp |
-| crab-legs | Crab Legs | meat-seafood | Frame 91.png | banners/meat-seafood.webp |
-| sausages | Sausages | meat-seafood | Frame 91.png | banners/meat-seafood.webp |
-| chicken-wings | Chicken Wings | meat-seafood | Frame 91.png | banners/meat-seafood.webp |
-| cod-fillet | Cod Fillet | meat-seafood | Frame 91.png | banners/meat-seafood.webp |
-| beef-brisket | Beef Brisket | meat-seafood | Frame 91.png | banners/meat-seafood.webp |
-| whole-milk | Whole Milk | dairy-eggs | Frame 92.png | banners/dairy-eggs.webp |
-| cheddar-cheese | Cheddar Cheese | dairy-eggs | Frame 92.png | banners/dairy-eggs.webp |
-| free-range-eggs | Free-range Eggs | dairy-eggs | Frame 92.png | banners/dairy-eggs.webp |
-| greek-yogurt | Greek Yogurt | dairy-eggs | Frame 92.png | banners/dairy-eggs.webp |
-| butter | Butter | dairy-eggs | Frame 92.png | banners/dairy-eggs.webp |
-| mozzarella-cheese | Mozzarella Cheese | dairy-eggs | Frame 92.png | banners/dairy-eggs.webp |
-| cream-cheese | Cream Cheese | dairy-eggs | Frame 92.png | banners/dairy-eggs.webp |
-| sour-cream | Sour Cream | dairy-eggs | Frame 92.png | banners/dairy-eggs.webp |
-| cottage-cheese | Cottage Cheese | dairy-eggs | Frame 92.png | banners/dairy-eggs.webp |
-| almond-milk | Almond Milk | dairy-eggs | Frame 92.png | banners/dairy-eggs.webp |
-| parmesan-cheese | Parmesan Cheese | dairy-eggs | Frame 92.png | banners/dairy-eggs.webp |
-| heavy-cream | Heavy Cream | dairy-eggs | Frame 92.png | banners/dairy-eggs.webp |
-| feta-cheese | Feta Cheese | dairy-eggs | Frame 92.png | banners/dairy-eggs.webp |
-| duck-eggs | Duck Eggs | dairy-eggs | Frame 92.png | banners/dairy-eggs.webp |
-| chocolate-milk | Chocolate Milk | dairy-eggs | Frame 92.png | banners/dairy-eggs.webp |
-| fresh-orange-juice | Fresh Orange Juice | beverages | image 55.png | banners/beverages.webp |
-| sparkling-water | Sparkling Water | beverages | image 55.png | banners/beverages.webp |
-| apple-juice | Apple Juice | beverages | image 55.png | banners/beverages.webp |
-| cold-brew-coffee | Cold Brew Coffee | beverages | image 55.png | banners/beverages.webp |
-| green-tea | Green Tea | beverages | image 55.png | banners/beverages.webp |
-| lemonade | Lemonade | beverages | image 55.png | banners/beverages.webp |
-| grape-juice | Grape Juice | beverages | image 55.png | banners/beverages.webp |
-| energy-drink | Energy Drink | beverages | image 55.png | banners/beverages.webp |
-| coconut-water | Coconut Water | beverages | image 55.png | banners/beverages.webp |
-| iced-tea | Iced Tea | beverages | image 55.png | banners/beverages.webp |
-| mineral-water | Mineral Water | beverages | image 55.png | banners/beverages.webp |
-| smoothie-mix | Smoothie Mix | beverages | image 55.png | banners/beverages.webp |
-| cranberry-juice | Cranberry Juice | beverages | image 55.png | banners/beverages.webp |
-| root-beer | Root Beer | beverages | image 55.png | banners/beverages.webp |
-| pineapple-juice | Pineapple Juice | beverages | image 55.png | banners/beverages.webp |
-| green-grapes | Green Grapes | fruits | image 85.png | banners/fruits.webp |
-| strawberries | Strawberries | fruits | image 85.png | banners/fruits.webp |
-| pineapple | Pineapple | fruits | image 85.png | banners/fruits.webp |
-| kiwi | Kiwi | fruits | image 85.png | banners/fruits.webp |
-| red-apples | Red Apples | fruits | image 85.png | banners/fruits.webp |
-| peaches | Peaches | fruits | image 85.png | banners/fruits.webp |
-| pears | Pears | fruits | image 85.png | banners/fruits.webp |
-| cherries | Cherries | fruits | image 85.png | banners/fruits.webp |
-| plums | Plums | fruits | image 85.png | banners/fruits.webp |
-| lemons | Lemons | fruits | image 85.png | banners/fruits.webp |
-| limes | Limes | fruits | image 85.png | banners/fruits.webp |
-| potato-chips | Potato Chips | snacks | Frame 94.png | banners/snacks.webp |
-| chocolate-bar | Chocolate Bar | snacks | Frame 94.png | banners/snacks.webp |
-| pretzel-sticks | Pretzel Sticks | snacks | Frame 94.png | banners/snacks.webp |
-| popcorn | Popcorn | snacks | Frame 94.png | banners/snacks.webp |
-| trail-mix | Trail Mix | snacks | Frame 94.png | banners/snacks.webp |
-| corn-chips | Corn Chips | snacks | Frame 94.png | banners/snacks.webp |
-| granola-bar | Granola Bar | snacks | Frame 94.png | banners/snacks.webp |
-| gummy-candy | Gummy Candy | snacks | Frame 94.png | banners/snacks.webp |
-| cheese-puffs | Cheese Puffs | snacks | Frame 94.png | banners/snacks.webp |
-| rice-crackers | Rice Crackers | snacks | Frame 94.png | banners/snacks.webp |
-| cookies | Cookies | snacks | Frame 94.png | banners/snacks.webp |
-| nuts-mix | Nuts Mix | snacks | Frame 94.png | banners/snacks.webp |
-| fruit-gummies | Fruit Gummies | snacks | Frame 94.png | banners/snacks.webp |
-| beef-jerky | Beef Jerky | snacks | Frame 94.png | banners/snacks.webp |
-| chocolate-wafers | Chocolate Wafers | snacks | Frame 94.png | banners/snacks.webp |
-| sourdough-bread | Sourdough Bread | bakery | ImageContainer.png | banners/bakery.webp |
-| ground-arabica-coffee | Ground Arabica Coffee | beverages | image 133.png | banners/party-essentials.webp |
+| artisan-sourdough-bread | Artisan Sourdough Bread | bakery | category tile (`Frame 88.png`) | banners/bakery.webp |
+| chocolate-chip-cookies | Chocolate Chip Cookies | bakery | category tile (`Frame 88.png`) | banners/bakery.webp |
+| frozen-vanilla-ice-cream | Frozen Vanilla Ice Cream | frozen-foods | category tile (`Frame 89.png`) | banners/frozen-foods.webp |
+| frozen-peas | Frozen Peas | frozen-foods | category tile (`Frame 89.png`) | banners/frozen-foods.webp |
+| frozen-berries-mix | Frozen Berries Mix | frozen-foods | category tile (`Frame 89.png`) | banners/frozen-foods.webp |
+| frozen-pizza | Frozen Pizza | frozen-foods | category tile (`Frame 89.png`) | banners/frozen-foods.webp |
+| frozen-waffles | Frozen Waffles | frozen-foods | category tile (`Frame 89.png`) | banners/frozen-foods.webp |
+| frozen-yogurt | Frozen Yogurt | frozen-foods | category tile (`Frame 89.png`) | banners/frozen-foods.webp |
+| frozen-corn | Frozen Corn | frozen-foods | category tile (`Frame 89.png`) | banners/frozen-foods.webp |
+| frozen-fries | Frozen Fries | frozen-foods | category tile (`Frame 89.png`) | banners/frozen-foods.webp |
+| frozen-dumplings | Frozen Dumplings | frozen-foods | category tile (`Frame 89.png`) | banners/frozen-foods.webp |
+| frozen-mixed-vegetables | Frozen Mixed Vegetables | frozen-foods | category tile (`Frame 89.png`) | banners/frozen-foods.webp |
+| frozen-chicken-nuggets | Frozen Chicken Nuggets | frozen-foods | category tile (`Frame 89.png`) | banners/frozen-foods.webp |
+| frozen-spinach | Frozen Spinach | frozen-foods | category tile (`Frame 89.png`) | banners/frozen-foods.webp |
+| frozen-fruit-popsicles | Frozen Fruit Popsicles | frozen-foods | category tile (`Frame 89.png`) | banners/frozen-foods.webp |
+| frozen-fish-fillet | Frozen Fish Fillet | frozen-foods | category tile (`Frame 89.png`) | banners/frozen-foods.webp |
+| frozen-ice-cubes | Frozen Ice Cubes | frozen-foods | category tile (`Frame 89.png`) | banners/frozen-foods.webp |
+| salmon-fillet | Salmon Fillet | meat-seafood | category tile (`Frame 90.png`) | banners/meat-seafood.webp |
+| beef-ribeye-steak | Beef Ribeye Steak | meat-seafood | category tile (`Frame 90.png`) | banners/meat-seafood.webp |
+| ground-beef | Ground Beef | meat-seafood | category tile (`Frame 90.png`) | banners/meat-seafood.webp |
+| lamb-chops | Lamb Chops | meat-seafood | category tile (`Frame 90.png`) | banners/meat-seafood.webp |
+| pork-chops | Pork Chops | meat-seafood | category tile (`Frame 90.png`) | banners/meat-seafood.webp |
+| tuna-steak | Tuna Steak | meat-seafood | category tile (`Frame 90.png`) | banners/meat-seafood.webp |
+| turkey-breast | Turkey Breast | meat-seafood | category tile (`Frame 90.png`) | banners/meat-seafood.webp |
+| bacon-strips | Bacon Strips | meat-seafood | category tile (`Frame 90.png`) | banners/meat-seafood.webp |
+| crab-legs | Crab Legs | meat-seafood | category tile (`Frame 90.png`) | banners/meat-seafood.webp |
+| sausages | Sausages | meat-seafood | category tile (`Frame 90.png`) | banners/meat-seafood.webp |
+| chicken-wings | Chicken Wings | meat-seafood | category tile (`Frame 90.png`) | banners/meat-seafood.webp |
+| cod-fillet | Cod Fillet | meat-seafood | category tile (`Frame 90.png`) | banners/meat-seafood.webp |
+| beef-brisket | Beef Brisket | meat-seafood | category tile (`Frame 90.png`) | banners/meat-seafood.webp |
+| cheddar-cheese | Cheddar Cheese | dairy-eggs | category tile (`Frame 91.png`) | banners/dairy-eggs.webp |
+| free-range-eggs | Free-range Eggs | dairy-eggs | category tile (`Frame 91.png`) | banners/dairy-eggs.webp |
+| greek-yogurt | Greek Yogurt | dairy-eggs | category tile (`Frame 91.png`) | banners/dairy-eggs.webp |
+| butter | Butter | dairy-eggs | category tile (`Frame 91.png`) | banners/dairy-eggs.webp |
+| mozzarella-cheese | Mozzarella Cheese | dairy-eggs | category tile (`Frame 91.png`) | banners/dairy-eggs.webp |
+| cream-cheese | Cream Cheese | dairy-eggs | category tile (`Frame 91.png`) | banners/dairy-eggs.webp |
+| sour-cream | Sour Cream | dairy-eggs | category tile (`Frame 91.png`) | banners/dairy-eggs.webp |
+| cottage-cheese | Cottage Cheese | dairy-eggs | category tile (`Frame 91.png`) | banners/dairy-eggs.webp |
+| almond-milk | Almond Milk | dairy-eggs | category tile (`Frame 91.png`) | banners/dairy-eggs.webp |
+| parmesan-cheese | Parmesan Cheese | dairy-eggs | category tile (`Frame 91.png`) | banners/dairy-eggs.webp |
+| heavy-cream | Heavy Cream | dairy-eggs | category tile (`Frame 91.png`) | banners/dairy-eggs.webp |
+| feta-cheese | Feta Cheese | dairy-eggs | category tile (`Frame 91.png`) | banners/dairy-eggs.webp |
+| duck-eggs | Duck Eggs | dairy-eggs | category tile (`Frame 91.png`) | banners/dairy-eggs.webp |
+| chocolate-milk | Chocolate Milk | dairy-eggs | category tile (`Frame 91.png`) | banners/dairy-eggs.webp |
+| fresh-orange-juice | Fresh Orange Juice | beverages | category tile (`image 55.png`) | banners/beverages.webp |
+| sparkling-water | Sparkling Water | beverages | category tile (`image 55.png`) | banners/beverages.webp |
+| apple-juice | Apple Juice | beverages | category tile (`image 55.png`) | banners/beverages.webp |
+| cold-brew-coffee | Cold Brew Coffee | beverages | category tile (`image 55.png`) | banners/beverages.webp |
+| green-tea | Green Tea | beverages | category tile (`image 55.png`) | banners/beverages.webp |
+| lemonade | Lemonade | beverages | category tile (`image 55.png`) | banners/beverages.webp |
+| grape-juice | Grape Juice | beverages | category tile (`image 55.png`) | banners/beverages.webp |
+| energy-drink | Energy Drink | beverages | category tile (`image 55.png`) | banners/beverages.webp |
+| coconut-water | Coconut Water | beverages | category tile (`image 55.png`) | banners/beverages.webp |
+| iced-tea | Iced Tea | beverages | category tile (`image 55.png`) | banners/beverages.webp |
+| mineral-water | Mineral Water | beverages | category tile (`image 55.png`) | banners/beverages.webp |
+| smoothie-mix | Smoothie Mix | beverages | category tile (`image 55.png`) | banners/beverages.webp |
+| cranberry-juice | Cranberry Juice | beverages | category tile (`image 55.png`) | banners/beverages.webp |
+| root-beer | Root Beer | beverages | category tile (`image 55.png`) | banners/beverages.webp |
+| pineapple-juice | Pineapple Juice | beverages | category tile (`image 55.png`) | banners/beverages.webp |
+| green-grapes | Green Grapes | fruits | placeholder (no tile, no photo) | placeholder.svg |
+| pineapple | Pineapple | fruits | placeholder (no tile, no photo) | placeholder.svg |
+| kiwi | Kiwi | fruits | placeholder (no tile, no photo) | placeholder.svg |
+| peaches | Peaches | fruits | placeholder (no tile, no photo) | placeholder.svg |
+| pears | Pears | fruits | placeholder (no tile, no photo) | placeholder.svg |
+| cherries | Cherries | fruits | placeholder (no tile, no photo) | placeholder.svg |
+| plums | Plums | fruits | placeholder (no tile, no photo) | placeholder.svg |
+| lemons | Lemons | fruits | placeholder (no tile, no photo) | placeholder.svg |
+| limes | Limes | fruits | placeholder (no tile, no photo) | placeholder.svg |
+| potato-chips | Potato Chips | snacks | category tile (`Frame 94.png`) | banners/snacks.webp |
+| chocolate-bar | Chocolate Bar | snacks | category tile (`Frame 94.png`) | banners/snacks.webp |
+| pretzel-sticks | Pretzel Sticks | snacks | category tile (`Frame 94.png`) | banners/snacks.webp |
+| popcorn | Popcorn | snacks | category tile (`Frame 94.png`) | banners/snacks.webp |
+| trail-mix | Trail Mix | snacks | category tile (`Frame 94.png`) | banners/snacks.webp |
+| corn-chips | Corn Chips | snacks | category tile (`Frame 94.png`) | banners/snacks.webp |
+| granola-bar | Granola Bar | snacks | category tile (`Frame 94.png`) | banners/snacks.webp |
+| gummy-candy | Gummy Candy | snacks | category tile (`Frame 94.png`) | banners/snacks.webp |
+| cheese-puffs | Cheese Puffs | snacks | category tile (`Frame 94.png`) | banners/snacks.webp |
+| rice-crackers | Rice Crackers | snacks | category tile (`Frame 94.png`) | banners/snacks.webp |
+| cookies | Cookies | snacks | category tile (`Frame 94.png`) | banners/snacks.webp |
+| nuts-mix | Nuts Mix | snacks | category tile (`Frame 94.png`) | banners/snacks.webp |
+| fruit-gummies | Fruit Gummies | snacks | category tile (`Frame 94.png`) | banners/snacks.webp |
+| beef-jerky | Beef Jerky | snacks | category tile (`Frame 94.png`) | banners/snacks.webp |
+| chocolate-wafers | Chocolate Wafers | snacks | category tile (`Frame 94.png`) | banners/snacks.webp |
+| organic-milk | Organic Milk | dairy-eggs | placeholder (override) | placeholder.svg |
+| organic-greek-yogurt | Organic Greek Yogurt | dairy-eggs | category tile (`Frame 91.png`) | banners/dairy-eggs.webp |
+| sourdough-bread | Sourdough Bread | bakery | category tile (`Frame 88.png`) | banners/bakery.webp |
+| creamy-almond-butter | Creamy Almond Butter | snacks | category tile (`Frame 94.png`) | banners/snacks.webp |
+| ground-arabica-coffee | Ground Arabica Coffee | beverages | category tile (`image 55.png`) | banners/beverages.webp |
 
 ## Same name, different images
 
-The first non-banner image in source order is used.
+The chosen image is listed first; the others from the source data are not used.
 
-- Broccoli: uses `Frame 88.png`; not used: `Frame 92.png` (banner)
+- Broccoli: uses `Frame 172.png`; not used: `Frame 92.png`, `Frame 88.png`
 - Fresh Mango: uses `image 111.png`; not used: `image 82.png`
-- Tomatoes: uses `image 191.png`; not used: `image 110.png` (banner), `Frame 90.png` (banner)
-- Organic Avocado: uses `image 112.png`; not used: `image 109.png`, `image 67.png`, `image 73.png` (banner), `image 166.png`
+- Tomatoes: uses `image 110.png`; not used: `Frame 90.png`, `image 191.png`
+- Organic Avocado: uses `image 112.png`; not used: `image 109.png`, `image 67.png`, `image 73.png`, `image 166.png`
 - Carrot: uses `image 113.png`; not used: `ImageContainer (2).png`
 - Cabbage: uses `image 114 (1).png`; not used: `ImageContainer (1).png`, `image 187.png`
-- Shrimp: uses `Frame 91.png` (banner); not used: `image 73.png` (banner)
-- Chicken Wings: uses `Frame 91.png` (banner); not used: `image 73.png` (banner)
-- Free-range Eggs: uses `Frame 92.png` (banner); not used: `image 61.png` (banner)
-- Cucumber: uses `image 85 (1).png`; not used: `image 85.png` (banner)
-- Strawberries: uses `image 85.png` (banner); not used: `image 110.png` (banner)
-- Blueberries: uses `image 87.png`; not used: `image 85.png` (banner)
-- Watermelon: uses `image 182.png`; not used: `image 85.png` (banner)
-- Bananas: uses `image 111.png`; not used: `image 85.png` (banner)
+- Artisan Sourdough Bread: uses `Frame 88.png`; not used: `ImageContainer.png`
+- Chocolate Chip Cookies: uses `Frame 88.png`; not used: `ImageContainer.png`
+- Frozen Vanilla Ice Cream: uses `Frame 89.png`; not used: `Frame 90.png`
+- Frozen Peas: uses `Frame 89.png`; not used: `Frame 90.png`
+- Frozen Berries Mix: uses `Frame 89.png`; not used: `Frame 90.png`
+- Frozen Pizza: uses `Frame 89.png`; not used: `Frame 90.png`
+- Frozen Waffles: uses `Frame 89.png`; not used: `Frame 90.png`
+- Frozen Yogurt: uses `Frame 89.png`; not used: `Frame 90.png`
+- Frozen Corn: uses `Frame 89.png`; not used: `Frame 90.png`
+- Frozen Fries: uses `Frame 89.png`; not used: `Frame 90.png`
+- Frozen Dumplings: uses `Frame 89.png`; not used: `Frame 90.png`
+- Frozen Mixed Vegetables: uses `Frame 89.png`; not used: `Frame 90.png`
+- Frozen Chicken Nuggets: uses `Frame 89.png`; not used: `Frame 90.png`
+- Frozen Spinach: uses `Frame 89.png`; not used: `Frame 90.png`
+- Frozen Fruit Popsicles: uses `Frame 89.png`; not used: `Frame 90.png`
+- Frozen Fish Fillet: uses `Frame 89.png`; not used: `Frame 90.png`
+- Frozen Ice Cubes: uses `Frame 89.png`; not used: `Frame 90.png`
+- Salmon Fillet: uses `Frame 90.png`; not used: `Frame 91.png`
+- Beef Ribeye Steak: uses `Frame 90.png`; not used: `Frame 91.png`
+- Chicken Breast: uses `image 73.png`; not used: `Frame 91.png`
+- Ground Beef: uses `Frame 90.png`; not used: `Frame 91.png`
+- Shrimp: uses `image 118.png`; not used: `Frame 91.png`, `image 73.png`
+- Lamb Chops: uses `Frame 90.png`; not used: `Frame 91.png`
+- Pork Chops: uses `Frame 90.png`; not used: `Frame 91.png`
+- Tuna Steak: uses `Frame 90.png`; not used: `Frame 91.png`
+- Turkey Breast: uses `Frame 90.png`; not used: `Frame 91.png`
+- Bacon Strips: uses `Frame 90.png`; not used: `Frame 91.png`
+- Crab Legs: uses `Frame 90.png`; not used: `Frame 91.png`
+- Sausages: uses `Frame 90.png`; not used: `Frame 91.png`
+- Chicken Wings: uses `Frame 90.png`; not used: `Frame 91.png`, `image 73.png`
+- Cod Fillet: uses `Frame 90.png`; not used: `Frame 91.png`
+- Beef Brisket: uses `Frame 90.png`; not used: `Frame 91.png`
+- Whole Milk: uses `image 71.png`; not used: `Frame 92.png`
+- Cheddar Cheese: uses `Frame 91.png`; not used: `Frame 92.png`
+- Free-range Eggs: uses `Frame 91.png`; not used: `Frame 92.png`, `image 61.png`
+- Greek Yogurt: uses `Frame 91.png`; not used: `Frame 92.png`
+- Butter: uses `Frame 91.png`; not used: `Frame 92.png`
+- Mozzarella Cheese: uses `Frame 91.png`; not used: `Frame 92.png`
+- Cream Cheese: uses `Frame 91.png`; not used: `Frame 92.png`
+- Sour Cream: uses `Frame 91.png`; not used: `Frame 92.png`
+- Cottage Cheese: uses `Frame 91.png`; not used: `Frame 92.png`
+- Almond Milk: uses `Frame 91.png`; not used: `Frame 92.png`
+- Parmesan Cheese: uses `Frame 91.png`; not used: `Frame 92.png`
+- Heavy Cream: uses `Frame 91.png`; not used: `Frame 92.png`
+- Feta Cheese: uses `Frame 91.png`; not used: `Frame 92.png`
+- Duck Eggs: uses `Frame 91.png`; not used: `Frame 92.png`
+- Chocolate Milk: uses `Frame 91.png`; not used: `Frame 92.png`
+- Cucumber: uses `image 85 (1).png`; not used: `image 85.png`
+- Green Grapes: uses `placeholder`; not used: `image 85.png`
+- Strawberries: uses `image 79.png`; not used: `image 85.png`, `image 110.png`
+- Blueberries: uses `image 79.png`; not used: `image 85.png`, `image 87.png`
+- Pineapple: uses `placeholder`; not used: `image 85.png`
+- Watermelon: uses `image 182.png`; not used: `image 85.png`
+- Kiwi: uses `placeholder`; not used: `image 85.png`
+- Bananas: uses `image 191.png`; not used: `image 85.png`, `image 111.png`
+- Red Apples: uses `image 185.png`; not used: `image 85.png`
+- Peaches: uses `placeholder`; not used: `image 85.png`
+- Pears: uses `placeholder`; not used: `image 85.png`
+- Cherries: uses `placeholder`; not used: `image 85.png`
+- Plums: uses `placeholder`; not used: `image 85.png`
+- Lemons: uses `placeholder`; not used: `image 85.png`
+- Limes: uses `placeholder`; not used: `image 85.png`
+- Oranges: uses `image 74.png`; not used: `image 191.png`
+- Organic Milk: uses `placeholder`; not used: `image 71.png`
+- Organic Greek Yogurt: uses `Frame 91.png`; not used: `Frame 92 (1).png`
+- Sourdough Bread: uses `Frame 88.png`; not used: `ImageContainer.png`
+- Creamy Almond Butter: uses `Frame 94.png`; not used: `image 109.png`
+- Ground Arabica Coffee: uses `image 55.png`; not used: `image 133.png`
 
 ### Shared galleries
 
-- Broccoli and Cabbage use the same gallery files
+_None._
 
 ## Applied decisions
 
@@ -284,7 +460,7 @@ Dropped: the 4th deal card ("Tomatoes", `sinamon` image, 25%).
 
 - `src/data/groceries.js` (GROCERIES) and its `/groceries/[slug]` route: dropped.
 - `src/data/groceriesTeaser.js`: stays as promo cards in the site code. Suggested links: Sweet Mangoes (×2) → `sweet-mangoes`, Local Lettuce → `lettuce`, Cucumbers → `cucumber`.
-- Banner image files (shared by 3+ names): `Frame 92.png`, `image 110.png`, `ImageContainer.png`, `Frame 90.png`, `Frame 91.png`, `image 55.png`, `image 85.png`, `Frame 94.png`, `image 73.png`, `image 61.png`, `image 133.png`, `Frame 102.png`, `Frame 103.png`, `Frame 107.png`, `image 134.png`.
+- Tile and occasion images, never used as a product photo: `Frame 92.png`, `Frame 88.png`, `Frame 89.png`, `Frame 90.png`, `Frame 91.png`, `image 55.png`, `Frame 94.png`, `image 85.png`, `Frame 92 (1).png`, `Frame 92 (2).png`, `Frame 102.png`, `Frame 103.png`, `Frame 107.png`, `image 61.png`, `image 133.png`, `image 134.png`.
 
 ## Missing source image files
 

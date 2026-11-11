@@ -2,11 +2,11 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import produce from "../../assets/image/Frame 88.png";
-import bakery from "../../assets/image/Frame 89.png";
-import frozen from "../../assets/image/Frame 90.png";
-import meat from "../../assets/image/Frame 91.png";
-import dairy from "../../assets/image/Frame 92.png";
+import produce from "../../assets/image/Frame 92.png";
+import bakery from "../../assets/image/Frame 88.png";
+import frozen from "../../assets/image/Frame 89.png";
+import meat from "../../assets/image/Frame 90.png";
+import dairy from "../../assets/image/Frame 91.png";
 import orange from "../../assets/image/image 55.png";
 import cucumber from "../../assets/image/image 85.png";
 import categories from "../../assets/image/Frame 92 (2).png";

@@ -1,58 +1,10 @@
 import Image from "next/image"
-import carrot from "../../assets/image/image 113.png"
-import cabbage from "../../assets/image/image 187.png"
-import tomatoes from "../../assets/image/image 191.png"
-import sinamon from "../../assets/image/ImageContainer.png"
-import { Star, ArrowRight, Wallet } from "lucide-react"
+import Link from "next/link"
+import { ArrowRight, Wallet } from "lucide-react"
+import { discountPercent, formatWeight, productImage } from "@/lib/products"
 
-const deals = [
-  {
-    image: carrot,
-    badge: "Off season",
-    name: "Carrot",
-    weight: "1g",
-    rating: "4.9",
-    reviews: "312",
-    price: "42",
-    oldPrice: "100",
-    discount: "25% OFF",
-  },
-  {
-    image: cabbage,
-    badge: null,
-    name: "Cabbage",
-    weight: "1g",
-    rating: "4.9",
-    reviews: "312",
-    price: "42",
-    oldPrice: "100",
-    discount: "15% OFF",
-  },
-  {
-    image: tomatoes,
-    badge: "Low in stock",
-    name: "Tomatoes",
-    weight: "1g",
-    rating: "4.9",
-    reviews: "312",
-    price: "42",
-    oldPrice: "100",
-    discount: "10% OFF",
-  },
-  {
-    image: sinamon,
-    badge: null,
-    name: "Tomatoes",
-    weight: "1g",
-    rating: "4.9",
-    reviews: "312",
-    price: "42",
-    oldPrice: "100",
-    discount: "25% OFF",
-  },
-]
-
-export default function Hero() {
+// deals: the API's "deals" collection (products with an oldPrice), fetched by app/groceries/page.js.
+export default function Hero({ deals = [] }) {
   return (
     <section className="bg-[#F5EEE2]  px-6 py-[20px] sm:px-[40px] sm:py-[24px] md:px-[64px] md:py-10 ">
       {/* Card container */}
@@ -78,16 +30,17 @@ export default function Hero() {
 
           {/* Right: deal cards + promo */}
           <div className="grid flex-1 grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
-            {deals.map((deal, i) => (
+            {deals.map((deal) => (
               <div
-                key={i}
+                key={deal.id}
                 className="flex flex-col overflow-hidden rounded-2xl bg-white border border-[#E4A94CD9]/80"
               >
-                <div className="relative aspect-square w-full">
+                <Link href={`/product/${deal.id}`} className="relative block aspect-square w-full">
                   <Image
-                    src={deal.image}
+                    src={productImage(deal.image)}
                     alt={deal.name}
                     fill
+                    sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 15vw"
                     className="object-cover"
                   />
                   {deal.badge && (
@@ -95,29 +48,15 @@ export default function Hero() {
                       {deal.badge}
                     </span>
                   )}
-                </div>
+                </Link>
 
                 <div className="flex flex-1 flex-col px-[13px] pt-3 pb-[27px]">
-                  <h3 className="text-[12px] font-extrabold text-[#1F2937]">
-                    {deal.name}
-                  </h3>
-                  <p className="text-[16px] text-[#4C545F]">{deal.weight}</p>
-
-                  <div className="mt-1 flex items-center gap-1">
-                    <div className="flex text-[#E3A008]">
-                      {Array.from({ length: 4 }).map((_, idx) => (
-                        <Star
-                          key={idx}
-                          className="h-3 w-3"
-                          fill="currentColor"
-                          strokeWidth={0}
-                        />
-                      ))}
-                    </div>
-                    <span className="text-[10px] text-[#4C545F]">
-                      {deal.rating} ({deal.reviews})
-                    </span>
-                  </div>
+                  <Link href={`/product/${deal.id}`}>
+                    <h3 className="text-[12px] font-extrabold text-[#1F2937]">
+                      {deal.name}
+                    </h3>
+                  </Link>
+                  <p className="text-[16px] text-[#4C545F]">{formatWeight(deal)}</p>
 
                   <div className="mt-2 flex items-baseline gap-2">
                     <span className="text-[17px] font-extrabold text-[#1F2937]">
@@ -126,13 +65,15 @@ export default function Hero() {
                         MXN
                       </sup>
                     </span>
-                    <span className="text-[9px] text-[#989DA3] line-through">
-                      {deal.oldPrice}MXN
-                    </span>
+                    {discountPercent(deal) != null && (
+                      <span className="text-[9px] text-[#989DA3] line-through">
+                        {deal.oldPrice}MXN
+                      </span>
+                    )}
                   </div>
 
                   <button className="mt-3 w-full rounded-[12px] bg-[#D97706] py-[5px] text-[12px] font-bold text-white transition hover:bg-[#C6672E]">
-                    {deal.discount}
+                    {discountPercent(deal) != null ? `${discountPercent(deal)}% OFF` : "Deal"}
                   </button>
                 </div>
               </div>
