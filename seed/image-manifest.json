@@ -1,0 +1,374 @@
+[
+  {
+    "productId": "broccoli",
+    "field": "image",
+    "from": "src/assets/image/Frame 88.png",
+    "to": "public/products/broccoli.webp",
+    "maxWidth": 800
+  },
+  {
+    "productId": "broccoli",
+    "field": "gallery[0]",
+    "from": "src/assets/image/Frame 172.png",
+    "to": "public/products/broccoli-1.webp",
+    "maxWidth": 1200
+  },
+  {
+    "productId": "broccoli",
+    "field": "gallery[1]",
+    "from": "src/assets/image/Frame 173.png",
+    "to": "public/products/broccoli-2.webp",
+    "maxWidth": 1200
+  },
+  {
+    "productId": "broccoli",
+    "field": "gallery[2]",
+    "from": "src/assets/image/Frame 175.png",
+    "to": "public/products/broccoli-3.webp",
+    "maxWidth": 1200
+  },
+  {
+    "productId": "broccoli",
+    "field": "gallery[3]",
+    "from": "src/assets/image/image 124.png",
+    "to": "public/products/broccoli-4.webp",
+    "maxWidth": 1200
+  },
+  {
+    "productId": "fresh-mango",
+    "field": "image",
+    "from": "src/assets/image/image 111.png",
+    "to": "public/products/fresh-mango.webp",
+    "maxWidth": 800
+  },
+  {
+    "productId": "fresh-mango",
+    "field": "gallery[0]",
+    "from": "src/assets/image/image 82 (1).png",
+    "to": "public/products/fresh-mango-1.webp",
+    "maxWidth": 1200
+  },
+  {
+    "productId": "fresh-mango",
+    "field": "gallery[1]",
+    "from": "src/assets/image/Frame 174.png",
+    "to": "public/products/fresh-mango-2.webp",
+    "maxWidth": 1200
+  },
+  {
+    "productId": "fresh-mango",
+    "field": "gallery[2]",
+    "from": "src/assets/image/Frame 173 (1).png",
+    "to": "public/products/fresh-mango-3.webp",
+    "maxWidth": 1200
+  },
+  {
+    "productId": "fresh-mango",
+    "field": "gallery[3]",
+    "from": "src/assets/image/Frame 175 (1).png",
+    "to": "public/products/fresh-mango-4.webp",
+    "maxWidth": 1200
+  },
+  {
+    "productId": "tomatoes",
+    "field": "image",
+    "from": "src/assets/image/image 191.png",
+    "to": "public/products/tomatoes.webp",
+    "maxWidth": 800
+  },
+  {
+    "productId": "organic-avocado",
+    "field": "image",
+    "from": "src/assets/image/image 112.png",
+    "to": "public/products/organic-avocado.webp",
+    "maxWidth": 800
+  },
+  {
+    "productId": "carrot",
+    "field": "image",
+    "from": "src/assets/image/image 113.png",
+    "to": "public/products/carrot.webp",
+    "maxWidth": 800
+  },
+  {
+    "productId": "cabbage",
+    "field": "image",
+    "from": "src/assets/image/image 114 (1).png",
+    "to": "public/products/cabbage.webp",
+    "maxWidth": 800
+  },
+  {
+    "productId": "cabbage",
+    "field": "gallery[0]",
+    "from": "src/assets/image/Frame 172.png",
+    "to": "public/products/cabbage-1.webp",
+    "maxWidth": 1200
+  },
+  {
+    "productId": "cabbage",
+    "field": "gallery[1]",
+    "from": "src/assets/image/Frame 173.png",
+    "to": "public/products/cabbage-2.webp",
+    "maxWidth": 1200
+  },
+  {
+    "productId": "cabbage",
+    "field": "gallery[2]",
+    "from": "src/assets/image/Frame 175.png",
+    "to": "public/products/cabbage-3.webp",
+    "maxWidth": 1200
+  },
+  {
+    "productId": "cabbage",
+    "field": "gallery[3]",
+    "from": "src/assets/image/image 124.png",
+    "to": "public/products/cabbage-4.webp",
+    "maxWidth": 1200
+  },
+  {
+    "productId": "cucumber",
+    "field": "image",
+    "from": "src/assets/image/image 85 (1).png",
+    "to": "public/products/cucumber.webp",
+    "maxWidth": 800
+  },
+  {
+    "productId": "blueberries",
+    "field": "image",
+    "from": "src/assets/image/image 87.png",
+    "to": "public/products/blueberries.webp",
+    "maxWidth": 800
+  },
+  {
+    "productId": "watermelon",
+    "field": "image",
+    "from": "src/assets/image/image 182.png",
+    "to": "public/products/watermelon.webp",
+    "maxWidth": 800
+  },
+  {
+    "productId": "bananas",
+    "field": "image",
+    "from": "src/assets/image/image 111.png",
+    "to": "public/products/bananas.webp",
+    "maxWidth": 800
+  },
+  {
+    "productId": "sweet-mangoes",
+    "field": "image",
+    "from": "src/assets/image/image 82.png",
+    "to": "public/products/sweet-mangoes.webp",
+    "maxWidth": 800
+  },
+  {
+    "productId": "lettuce",
+    "field": "image",
+    "from": "src/assets/image/image 84.png",
+    "to": "public/products/lettuce.webp",
+    "maxWidth": 800
+  },
+  {
+    "productId": "oranges",
+    "field": "image",
+    "from": "src/assets/image/image 191.png",
+    "to": "public/products/oranges.webp",
+    "maxWidth": 800
+  },
+  {
+    "productId": "organic-apples",
+    "field": "image",
+    "from": "src/assets/image/image 185.png",
+    "to": "public/products/organic-apples.webp",
+    "maxWidth": 800
+  },
+  {
+    "productId": "bell-pepper",
+    "field": "image",
+    "from": "src/assets/image/image 189.png",
+    "to": "public/products/bell-pepper.webp",
+    "maxWidth": 800
+  },
+  {
+    "productId": "milk",
+    "field": "image",
+    "from": "src/assets/image/image 71.png",
+    "to": "public/products/milk.webp",
+    "maxWidth": 800
+  },
+  {
+    "productId": "organic-milk",
+    "field": "image",
+    "from": "src/assets/image/image 71.png",
+    "to": "public/products/organic-milk.webp",
+    "maxWidth": 800
+  },
+  {
+    "productId": "organic-greek-yogurt",
+    "field": "image",
+    "from": "src/assets/image/Frame 92 (1).png",
+    "to": "public/products/organic-greek-yogurt.webp",
+    "maxWidth": 800
+  },
+  {
+    "productId": "creamy-almond-butter",
+    "field": "image",
+    "from": "src/assets/image/image 109.png",
+    "to": "public/products/creamy-almond-butter.webp",
+    "maxWidth": 800
+  },
+  {
+    "productIds": [
+      "artisan-sourdough-bread",
+      "croissant-4-pack",
+      "chocolate-chip-cookies",
+      "sourdough-bread"
+    ],
+    "field": "banner",
+    "from": "src/assets/image/ImageContainer.png",
+    "to": "public/products/banners/bakery.webp",
+    "maxWidth": 800
+  },
+  {
+    "productIds": [
+      "frozen-vanilla-ice-cream",
+      "frozen-peas",
+      "frozen-berries-mix",
+      "frozen-pizza",
+      "frozen-waffles",
+      "frozen-yogurt",
+      "frozen-corn",
+      "frozen-fries",
+      "frozen-dumplings",
+      "frozen-mixed-vegetables",
+      "frozen-chicken-nuggets",
+      "frozen-spinach",
+      "frozen-fruit-popsicles",
+      "frozen-fish-fillet",
+      "frozen-ice-cubes"
+    ],
+    "field": "banner",
+    "from": "src/assets/image/Frame 90.png",
+    "to": "public/products/banners/frozen-foods.webp",
+    "maxWidth": 800
+  },
+  {
+    "productIds": [
+      "salmon-fillet",
+      "beef-ribeye-steak",
+      "chicken-breast",
+      "ground-beef",
+      "shrimp",
+      "lamb-chops",
+      "pork-chops",
+      "tuna-steak",
+      "turkey-breast",
+      "bacon-strips",
+      "crab-legs",
+      "sausages",
+      "chicken-wings",
+      "cod-fillet",
+      "beef-brisket"
+    ],
+    "field": "banner",
+    "from": "src/assets/image/Frame 91.png",
+    "to": "public/products/banners/meat-seafood.webp",
+    "maxWidth": 800
+  },
+  {
+    "productIds": [
+      "whole-milk",
+      "cheddar-cheese",
+      "free-range-eggs",
+      "greek-yogurt",
+      "butter",
+      "mozzarella-cheese",
+      "cream-cheese",
+      "sour-cream",
+      "cottage-cheese",
+      "almond-milk",
+      "parmesan-cheese",
+      "heavy-cream",
+      "feta-cheese",
+      "duck-eggs",
+      "chocolate-milk"
+    ],
+    "field": "banner",
+    "from": "src/assets/image/Frame 92.png",
+    "to": "public/products/banners/dairy-eggs.webp",
+    "maxWidth": 800
+  },
+  {
+    "productIds": [
+      "fresh-orange-juice",
+      "sparkling-water",
+      "apple-juice",
+      "cold-brew-coffee",
+      "green-tea",
+      "lemonade",
+      "grape-juice",
+      "energy-drink",
+      "coconut-water",
+      "iced-tea",
+      "mineral-water",
+      "smoothie-mix",
+      "cranberry-juice",
+      "root-beer",
+      "pineapple-juice"
+    ],
+    "field": "banner",
+    "from": "src/assets/image/image 55.png",
+    "to": "public/products/banners/beverages.webp",
+    "maxWidth": 800
+  },
+  {
+    "productIds": [
+      "green-grapes",
+      "strawberries",
+      "pineapple",
+      "kiwi",
+      "red-apples",
+      "peaches",
+      "pears",
+      "cherries",
+      "plums",
+      "lemons",
+      "limes"
+    ],
+    "field": "banner",
+    "from": "src/assets/image/image 85.png",
+    "to": "public/products/banners/fruits.webp",
+    "maxWidth": 800
+  },
+  {
+    "productIds": [
+      "potato-chips",
+      "chocolate-bar",
+      "pretzel-sticks",
+      "popcorn",
+      "trail-mix",
+      "corn-chips",
+      "granola-bar",
+      "gummy-candy",
+      "cheese-puffs",
+      "rice-crackers",
+      "cookies",
+      "nuts-mix",
+      "fruit-gummies",
+      "beef-jerky",
+      "chocolate-wafers"
+    ],
+    "field": "banner",
+    "from": "src/assets/image/Frame 94.png",
+    "to": "public/products/banners/snacks.webp",
+    "maxWidth": 800
+  },
+  {
+    "productIds": [
+      "ground-arabica-coffee"
+    ],
+    "field": "banner",
+    "from": "src/assets/image/image 133.png",
+    "to": "public/products/banners/party-essentials.webp",
+    "maxWidth": 800
+  }
+]
