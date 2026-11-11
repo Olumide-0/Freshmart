@@ -69,6 +69,13 @@ export function formatWeight(product) {
   return unit ? `${weight} ${unit}` : String(weight);
 }
 
+// "$42.00/kg" for 1 kg, "$42.00/500 g" for 500 g, "$42.00" with no unit.
+export function formatUnitPrice(product) {
+  const { weight, unit } = product ?? {};
+  const per = !unit ? "" : weight == null || weight === 1 ? unit : formatWeight(product);
+  return `$${formatPrice(product?.price)}${per ? `/${per}` : ""}`;
+}
+
 // Whole-number percentage off, or null when there is no valid old price.
 export function discountPercent(product) {
   const price = Number(product?.price);

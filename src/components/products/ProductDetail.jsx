@@ -5,16 +5,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { ChevronRight, Leaf, Hand, ShieldCheck, Minus, Plus, Truck, CheckCircle2, X } from "lucide-react";
 import { CATEGORY_LABELS } from "@/lib/categories";
-import { formatPrice, formatWeight } from "@/lib/products";
+import { formatUnitPrice } from "@/lib/products";
 import { useCartStore } from "@/store/useCartStore";
 
 const SIZE_OPTIONS = ["500g", "1 Kg", "5kg"];
-
-// "kg" for 1 kg, "500 g" for 500 g, "" when the product has no unit.
-function perLabel(product) {
-  if (!product.unit) return "";
-  return product.weight == null || product.weight === 1 ? product.unit : formatWeight(product);
-}
 
 export default function ProductDetail({ product }) {
   const [selectedSize, setSelectedSize] = useState("1 Kg");
@@ -28,8 +22,7 @@ export default function ProductDetail({ product }) {
   const categoryLabel = CATEGORY_LABELS[product.category] ?? "Products";
   const totalValue = Number(product.price) * quantity;
   const total = Number.isInteger(totalValue) ? String(totalValue) : totalValue.toFixed(2);
-  const per = perLabel(product);
-  const unitPrice = `$${formatPrice(product.price)}${per ? `/${per}` : ""}`;
+  const unitPrice = formatUnitPrice(product);
 
   const handleAddToCart = () => {
     addItem(

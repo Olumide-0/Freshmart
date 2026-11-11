@@ -26,6 +26,7 @@ import { useCartStore } from "@/store/useCartStore";
 import AuthFlow from "@/components/auth/AuthFlow";
 import CustomQuantityModal from "@/components/cart/CustomQuantityModal";
 import BasketSummary from "@/components/cart/BasketSummary";
+import { formatUnitPrice, formatWeight } from "@/lib/products";
 
 const RELATED_PRODUCTS = [
   {
@@ -265,7 +266,7 @@ export default function CartPage() {
             {/* Cart item cards */}
             {items.map((item) => (
               <div
-                key={item.id}
+                key={item.lineId}
                 className="flex flex-col overflow-hidden rounded-[8px] bg-white sm:flex-row"
               >
                 <div className="relative h-[220px] w-full shrink-0 self-stretch overflow-hidden rounded-[8px] sm:h-auto sm:w-[260px] sm:rounded-r-none md:w-[300px]">
@@ -307,35 +308,20 @@ export default function CartPage() {
                       </div>
 
                       <p className="mt-[10px] text-[14px] text-[#4B5563] sm:text-[15px]">
-                        {item.unitPrice || "$19.00/kg"}
+                        {formatUnitPrice(item)}
                       </p>
 
-                      <p className="mt-[4px] text-[14px] text-[#4B5563] sm:text-[15px]">
-                        ({item.weight || "1kg"})
-                      </p>
+                      {formatWeight(item) && (
+                        <p className="mt-[4px] text-[14px] text-[#4B5563] sm:text-[15px]">
+                          ({formatWeight(item)})
+                        </p>
+                      )}
                     </div>
                   </div>
 
                   <p className="mt-[6px] max-w-[420px] text-[16px] leading-[1.5] text-gray-500">
                     {item.description}
                   </p>
-
-                  <div className="mt-[8px] flex items-center gap-[6px]">
-                    <div className="flex text-[#E3A008]">
-                      {Array.from({ length: 4 }).map((_, idx) => (
-                        <Star
-                          key={idx}
-                          className="h-[13px] w-[13px]"
-                          fill="currentColor"
-                          strokeWidth={0}
-                        />
-                      ))}
-                    </div>
-
-                    <span className="text-[16px] text-gray-500">
-                      {item.rating || "4.9"} ({item.reviews || "312 reviews"})
-                    </span>
-                  </div>
 
                   <div className="mt-[12px] flex flex-wrap items-end justify-between gap-4">
                     <div>
@@ -344,7 +330,7 @@ export default function CartPage() {
                           size === "Custom" ? (
                             <button
                               key={size}
-                              onClick={() => setCustomModalFor(item.id)}
+                              onClick={() => setCustomModalFor(item.lineId)}
                               className="flex flex-1 items-center justify-between gap-[6px] whitespace-nowrap px-[14px] py-[8px] text-[14px] font-semibold text-[#1F2937]"
                             >
                               {size}
@@ -369,7 +355,7 @@ export default function CartPage() {
 
                       <div className="mt-[10px] flex w-fit items-center gap-[14px] rounded-[8px] border border-[#F0DFC0] bg-white px-[12px] py-[7px]">
                         <button
-                          onClick={() => updateQuantity(item.id, -1)}
+                          onClick={() => updateQuantity(item.lineId, -1)}
                           className="text-[16px] font-medium leading-none text-[#1F2937]"
                         >
                           −
@@ -380,7 +366,7 @@ export default function CartPage() {
                         </span>
 
                         <button
-                          onClick={() => updateQuantity(item.id, 1)}
+                          onClick={() => updateQuantity(item.lineId, 1)}
                           className="text-[16px] font-medium leading-none text-[#1F2937]"
                         >
                           +
@@ -398,7 +384,7 @@ export default function CartPage() {
 
                       <button
                         aria-label="Remove item"
-                        onClick={() => removeItem(item.id)}
+                        onClick={() => removeItem(item.lineId)}
                       >
                         <Trash2
                           className="h-[18px] w-[18px] text-[#1F2937]"
