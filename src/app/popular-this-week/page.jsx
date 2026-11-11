@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Heart, Star, Plus, ChevronRight, CheckCircle2, X } from "lucide-react";
 import { POPULAR_WEEK } from "@/data/popularThisWeek";
 import { useCartStore } from "@/store/useCartStore";
+import { productImage } from "@/lib/products";
 
 const BADGE_STYLES = {
   "In season": "bg-[#E6F0E1] text-[#3E5730]",
@@ -65,7 +66,7 @@ export default function PopularThisWeekPage() {
           <div key={i} className="relative flex flex-col overflow-hidden rounded-[14px] bg-white shadow-sm transition-shadow hover:shadow-md">
             <Link href={`/popular-week-product/${product.slug}`} className="relative block aspect-square w-full bg-gray-50">
               <Image
-                src={product.image}
+                src={productImage(product.image)}
                 alt={product.name}
                 fill
                 sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"

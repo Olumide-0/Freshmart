@@ -15,6 +15,7 @@ import DeliveryForm from "@/components/checkout/DeliveryForm";
 import BasketSummary from "@/components/cart/BasketSummary";
 import PaymentMethodModal from "@/components/checkout/PaymentMethodModal";
 import PaymentProcessing from "@/components/checkout/PaymentProcessing";
+import { cartTotalWeightKg } from "@/lib/cart";
 
 
 
@@ -44,10 +45,7 @@ const clearCart = useCartStore((state) => state.clearCart);
     (total, item) => total + item.price * item.quantity,
     0
   );
-  const totalWeight = items.reduce(
-  (total, item) => total + item.quantity * 6,
-  0
-);
+  const totalWeight = cartTotalWeightKg(items);
 
 const deliveryFormRef = useRef(null);
 

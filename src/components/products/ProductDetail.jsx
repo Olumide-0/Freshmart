@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ChevronRight, Leaf, Hand, ShieldCheck, Minus, Plus, Truck, CheckCircle2, X } from "lucide-react";
 import { CATEGORY_LABELS } from "@/lib/categories";
-import { formatUnitPrice } from "@/lib/products";
+import { formatUnitPrice, productImage } from "@/lib/products";
 import { useCartStore } from "@/store/useCartStore";
 
 const SIZE_OPTIONS = ["500g", "1 Kg", "5kg"];
@@ -14,8 +14,9 @@ export default function ProductDetail({ product }) {
   const [selectedSize, setSelectedSize] = useState("1 Kg");
   const [quantity, setQuantity] = useState(2);
   const [toast, setToast] = useState(false);
-  const thumbnails = product.gallery?.length ? product.gallery : Array(4).fill(product.image);
-  const [activeImage, setActiveImage] = useState(product.image);
+  const mainImage = productImage(product.image);
+  const thumbnails = product.gallery?.length ? product.gallery.map(productImage) : Array(4).fill(mainImage);
+  const [activeImage, setActiveImage] = useState(mainImage);
 
   const addItem = useCartStore((s) => s.addItem);
 

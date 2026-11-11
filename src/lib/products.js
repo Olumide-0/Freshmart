@@ -55,6 +55,15 @@ export const getProduct = cache(async function getProduct(id) {
 
 // ---- Formatting helpers (pure) ----
 
+export const PLACEHOLDER_IMAGE = "/products/placeholder.svg";
+
+// next/image throws on an empty src, so fall back to a neutral placeholder.
+// Static imports (objects) pass through unchanged.
+export function productImage(src) {
+  if (typeof src === "string") return src.trim() || PLACEHOLDER_IMAGE;
+  return src || PLACEHOLDER_IMAGE;
+}
+
 // 42 -> "42.00", 46.67 -> "46.67"
 export function formatPrice(value) {
   const n = Number(value);

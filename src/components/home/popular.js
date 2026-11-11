@@ -9,6 +9,7 @@ import juices from "../../assets/image/image 77.png";
 import berries from "../../assets/image/image 79.png";
 import { POPULAR } from "@/data/popular";
 import { useCartStore } from "@/store/useCartStore";
+import { productImage } from "@/lib/products";
 
 export default function Popular() {
   const [toast, setToast] = useState(false);
@@ -80,7 +81,7 @@ export default function Popular() {
                   className="relative block"
                 >
                   <Image
-                    src={product.image}
+                    src={productImage(product.image)}
                     alt={product.name}
                     className="h-[150px] w-full rounded-xl object-cover sm:h-[170px] lg:h-[190px]"
                   />

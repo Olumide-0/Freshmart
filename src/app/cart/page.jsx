@@ -26,7 +26,8 @@ import { useCartStore } from "@/store/useCartStore";
 import AuthFlow from "@/components/auth/AuthFlow";
 import CustomQuantityModal from "@/components/cart/CustomQuantityModal";
 import BasketSummary from "@/components/cart/BasketSummary";
-import { formatUnitPrice, formatWeight } from "@/lib/products";
+import { formatUnitPrice, productImage } from "@/lib/products";
+import { cartTotalWeightKg, lineTotal } from "@/lib/cart";
 
 const RELATED_PRODUCTS = [
   {
@@ -125,10 +126,7 @@ export default function CartPage() {
     0
   );
 
-  const totalWeight = items.reduce(
-    (sum, item) => sum + item.quantity * 6,
-    0
-  );
+  const totalWeight = cartTotalWeightKg(items);
 
   const handleCheckout = () => {
     if (!agreed) return;
@@ -271,7 +269,7 @@ export default function CartPage() {
               >
                 <div className="relative h-[220px] w-full shrink-0 self-stretch overflow-hidden rounded-[8px] sm:h-auto sm:w-[260px] sm:rounded-r-none md:w-[300px]">
                   <Image
-                    src={item.image}
+                    src={productImage(item.image)}
                     alt={item.name}
                     fill
                     className="object-cover"
@@ -299,7 +297,7 @@ export default function CartPage() {
                     <div className="shrink-0 text-right">
                       <div className="flex items-start justify-end gap-[3px]">
                         <span className="text-[24px] font-extrabold leading-none text-[#1F2937] sm:text-[26px]">
-                          ${item.price}
+                          ${lineTotal(item)}
                         </span>
 
                         <sup className="mt-[2px] text-[11px] font-semibold text-[#4B5563] sm:text-[12px]">
@@ -311,11 +309,9 @@ export default function CartPage() {
                         {formatUnitPrice(item)}
                       </p>
 
-                      {formatWeight(item) && (
-                        <p className="mt-[4px] text-[14px] text-[#4B5563] sm:text-[15px]">
-                          ({formatWeight(item)})
-                        </p>
-                      )}
+                      <p className="mt-[4px] text-[14px] text-[#4B5563] sm:text-[15px]">
+                        ({item.selectedSize})
+                      </p>
                     </div>
                   </div>
 
@@ -437,7 +433,7 @@ export default function CartPage() {
             >
               <div className="relative aspect-square w-full">
                 <Image
-                  src={product.image}
+                  src={productImage(product.image)}
                   alt={product.name}
                   fill
                   sizes="(max-width: 768px) 50vw, 20vw"

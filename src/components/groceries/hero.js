@@ -4,6 +4,7 @@ import cabbage from "../../assets/image/image 187.png"
 import tomatoes from "../../assets/image/image 191.png"
 import sinamon from "../../assets/image/ImageContainer.png"
 import { Star, ArrowRight, Wallet } from "lucide-react"
+import { productImage } from "@/lib/products"
 
 const deals = [
   {
@@ -85,7 +86,7 @@ export default function Hero() {
               >
                 <div className="relative aspect-square w-full">
                   <Image
-                    src={deal.image}
+                    src={productImage(deal.image)}
                     alt={deal.name}
                     fill
                     className="object-cover"

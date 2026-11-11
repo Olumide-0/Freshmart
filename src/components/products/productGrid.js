@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Heart, Star, Plus, CheckCircle2, X } from "lucide-react";
 import { useCartStore } from "@/store/useCartStore";
+import { productImage } from "@/lib/products";
 
 const BADGE_STYLES = {
   "In season": "bg-[#E6F0E1] text-[#3E5730]",
@@ -61,7 +62,7 @@ export default function ProductGrid({ products, basePath = "/product" }) {
           <div key={i} className="relative flex flex-col overflow-hidden rounded-[14px] bg-white">
             <Link href={product.slug ? `${basePath}/${product.slug}` : "#"} className="relative block aspect-square w-full">
               <Image
-                src={product.image}
+                src={productImage(product.image)}
                 alt={product.name}
                 fill
                 sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
