@@ -16,9 +16,9 @@ export default function Hero() {
         <Image src={hero} alt="" fill className="object-cover" />
         {/* Content */}
         <div className="absolute inset-0 flex items-center px-[20px] sm:px-[40px] md:px-[64px] ">
-          <div>
+          <div className="md:max-w-[62%] xl:max-w-none">
             <div className="flex flex-col gap-[18px] sm:gap-[24px] lg:gap-[34px]">
-              <h1 className="text-[32px] font-bold leading-[1.15] sm:text-[42px] md:text-[52px] lg:text-[64px]">
+              <h1 className="text-[32px] font-bold leading-[1.15] sm:text-[42px] md:text-[48px] lg:text-[56px] xl:text-[64px]">
                 <span className="block text-[#3E5730]">Fresh Groceries,</span>
                 <span className="block text-[#1F2937]">
                   thoughtfully delivered

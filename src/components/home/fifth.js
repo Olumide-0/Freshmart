@@ -71,7 +71,7 @@ export default function Fifth() {
       </div>
 
       {/* Feature cards */}
-      <div className="relative px-[20px] sm:px-[40px] md:px-[64px]   mx-auto mt-14 grid  grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-6 md:gap-5">
+      <div className="relative px-[20px] sm:px-[40px] md:px-[64px]   mx-auto mt-14 grid  grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6 md:gap-5">
         {features.map(({ icon: Icon, title, description }) => (
           <div
             key={title}

@@ -10,9 +10,9 @@ export default async function SearchPage({ searchParams }) {
   const results = query ? await getProducts({ q: query }) : [];
 
   return (
-    <div className="w-full bg-[#F6F0E3] px-[120px] py-[24px]">
+    <div className="w-full bg-[#F6F0E3] px-[20px] py-[24px] sm:px-[40px] md:px-[64px] xl:px-[120px]">
       {/* Breadcrumb */}
-      <div className="flex items-center gap-2 text-[13px] text-gray-500">
+      <div className="flex flex-wrap items-center gap-2 text-[13px] text-gray-500">
         <Link href="/" className="hover:text-gray-700">
           Home
         </Link>
@@ -20,7 +20,7 @@ export default async function SearchPage({ searchParams }) {
         <span className="font-semibold text-[#C6672E]">Search</span>
       </div>
 
-      <h1 className="mt-[16px] text-[26px] font-extrabold text-[#1F2937]">
+      <h1 className="mt-[16px] break-words text-[22px] font-extrabold text-[#1F2937] sm:text-[26px]">
         {results.length > 0
           ? `${results.length} result${results.length === 1 ? "" : "s"} for "${query}"`
           : `No results for "${query}"`}

@@ -523,7 +523,7 @@ export default function Navbar() {
       {cartOpen && <CartPanel onClose={() => setCartOpen(false)} />}
 
       {loginWarning && (
-        <div className="fixed right-[24px] top-[24px] z-[300] w-[340px] rounded-[14px] bg-white px-[20px] py-[16px] shadow-xl">
+        <div className="fixed left-[16px] right-[16px] top-[16px] z-[300] sm:left-auto sm:right-[24px] sm:top-[24px] sm:w-[340px] rounded-[14px] bg-white px-[20px] py-[16px] shadow-xl">
           <p className="text-[14px] font-semibold text-[#1F2937]">
             Please sign up or log in to access your cart.
           </p>

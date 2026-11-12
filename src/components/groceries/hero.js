@@ -9,9 +9,9 @@ export default function Hero({ deals = [] }) {
     <section className="bg-[#F5EEE2]  px-6 py-[20px] sm:px-[40px] sm:py-[24px] md:px-[64px] md:py-10 ">
       {/* Card container */}
       <div className="rounded-[28px] bg-[#F9F5EC] p-[20px] ">
-        <div className="flex flex-col gap-10 lg:flex-row lg:items-center">
+        <div className="flex flex-col gap-10 xl:flex-row xl:items-center">
           {/* Left: heading */}
-          <div className="relative shrink-0 lg:w-[360px]">
+          <div className="relative shrink-0 xl:w-[360px]">
             <p className="mb-3 text-[13px] font-extrabold tracking-wider text-[#C6672E]">
               TODAY&apos;S TOP DEALS
             </p>
@@ -23,7 +23,7 @@ export default function Hero({ deals = [] }) {
             <p className="mt-5 text-[#1F2937] text-[14px] sm:text-[15px]">
               Save more on your daily essentials today!
             </p>
-            <button className="w-full mt-7 rounded-[11px] bg-[#3E5730]  py-[8px] font-semibold text-white transition hover:bg-[#33593D]">
+            <button className="w-full sm:w-auto sm:px-[48px] xl:w-full xl:px-0 mt-7 rounded-[11px] bg-[#3E5730]  py-[8px] font-semibold text-white transition hover:bg-[#33593D]">
               Shop all deals
             </button>
           </div>
