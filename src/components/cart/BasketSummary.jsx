@@ -59,13 +59,13 @@ export default function BasketSummary({
     setTip(Number(value) || 0);
   };
   return (
-    <div className="flex w-full shrink-0 flex-col gap-[16px] overflow-hidden rounded-[8px] bg-white p-[20px] sm:p-[24px] lg:w-[380px]">
+    <div className="flex w-full shrink-0 flex-col gap-[16px] overflow-hidden rounded-[8px] bg-white p-[20px] sm:p-[24px] xl:w-[380px]">
       <h2 className="text-[18px] font-extrabold text-[#1F2937]">
         Basket summary
       </h2>
 
       {/* Basket image + basket details */}
-      <div className="relative -ml-[20px] flex items-center justify-between gap-[16px] sm:-ml-[24px]">
+      <div className="relative -ml-[20px] flex items-center justify-between gap-[16px] sm:-ml-[24px] sm:justify-start sm:gap-[48px] xl:justify-between xl:gap-[16px]">
         <div className="relative h-[180px] w-[100px] shrink-0 overflow-hidden sm:w-[110px]">
           <Image
             src={veggieCrate}

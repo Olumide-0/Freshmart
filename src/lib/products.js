@@ -7,8 +7,11 @@
 import { cache } from "react";
 
 const REVALIDATE_SECONDS = 60;
-// A cold Render instance takes ~50s to answer; give up a little after that.
-const TIMEOUT_MS = 60_000;
+// Give up after 15s so a cold Render start (~25-50s) shows the friendly
+// "waking up" page (error.jsx in each storefront route) instead of hanging.
+// A cached page is still served when a background refresh fails.
+// `npm run build` prerenders pages from the API: wake it first (open its URL).
+const TIMEOUT_SECONDS = 15;
 
 function apiUrl(path) {
   const base = process.env.NEXT_PUBLIC_API_URL;
@@ -18,12 +21,25 @@ function apiUrl(path) {
   return `${base.replace(/\/+$/, "")}${path}`;
 }
 
-function apiFetch(path) {
-  return fetch(apiUrl(path), {
-    next: { revalidate: REVALIDATE_SECONDS },
-    // A signal opts out of Next's per-render memoization; cache() below restores it.
-    signal: AbortSignal.timeout(TIMEOUT_MS),
-  });
+// Timeouts and network failures become one clear error (the original is kept
+// as `cause`). No retries: the error page's "Try again" button is the retry.
+async function apiFetch(path) {
+  try {
+    return await fetch(apiUrl(path), {
+      next: { revalidate: REVALIDATE_SECONDS },
+      // A signal opts out of Next's per-render memoization; cache() below restores it.
+      signal: AbortSignal.timeout(TIMEOUT_SECONDS * 1000),
+    });
+  } catch (err) {
+    if (err?.name === "TimeoutError" || err?.name === "AbortError") {
+      throw new Error(`FreshMart API did not answer within ${TIMEOUT_SECONDS}s (GET ${path})`, { cause: err });
+    }
+    // Node's fetch reports network failures as TypeError("fetch failed").
+    if (err instanceof TypeError) {
+      throw new Error(`Could not reach the FreshMart API (GET ${path})`, { cause: err });
+    }
+    throw err;
+  }
 }
 
 // filters: { collection, category, occasion, q } (all optional, combined with AND).

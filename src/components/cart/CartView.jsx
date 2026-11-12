@@ -146,9 +146,9 @@ export default function CartView({ relatedProducts = [] }) {
           </Link>
         </div>
       ) : (
-        <div className="mt-[20px] flex flex-col items-start gap-[20px] lg:flex-row lg:gap-[24px]">
+        <div className="mt-[20px] flex flex-col items-start gap-[20px] xl:flex-row xl:gap-[24px]">
           {/* Left column */}
-          <div className="flex w-full flex-1  flex-col gap-[16px] ">
+          <div className="flex w-full min-w-0 flex-1 flex-col gap-[16px]">
             {/* Free delivery banner */}
             <div className="flex flex-row items-center justify-between gap-4 rounded-[8px] bg-white p-[16px] sm:p-[20px]">
               <div className="w-full flex-1">

@@ -237,7 +237,7 @@ const tax = 0;
                 </span>
 
                 <span
-                  className={`whitespace-nowrap text-sm ${
+                  className={`whitespace-nowrap text-sm ${step.state === "current" ? "" : "hidden sm:inline"} ${
                     step.state === "current"
                       ? "font-medium text-neutral-900"
                       : "text-neutral-500"
@@ -248,17 +248,17 @@ const tax = 0;
               </div>
 
               {i < steps.length - 1 && (
-                <span className="mx-3 h-px flex-1 border-t border-dashed border-neutral-300" />
+                <span className="mx-2 h-px min-w-[12px] flex-1 border-t border-dashed border-neutral-300 sm:mx-3" />
               )}
             </li>
           ))}
         </ol>
 
       {/* Main checkout section */}
-      <div className="mt-[20px] flex flex-col gap-[24px] lg:flex-row">
+      <div className="mt-[20px] flex flex-col gap-[24px] xl:flex-row">
 
         {/* Delivery form */}
-        <div className="w-full flex-1">
+        <div className="w-full min-w-0 flex-1">
          <DeliveryForm
     ref={deliveryFormRef}
     onFormChange={setDeliveryData}
@@ -269,7 +269,7 @@ const tax = 0;
         </div>
 
         {/* Basket summary */}
-        <div className="w-full lg:w-[380px]">
+        <div className="w-full xl:w-[380px] xl:shrink-0">
           <BasketSummary
             subtotal={subtotal}
             totalWeight={totalWeight}
