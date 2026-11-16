@@ -1,173 +1,115 @@
 "use client";
 
+import { useMemo } from "react";
 import Link from "next/link";
-import { AlertTriangle, ChevronRight, CloudOff, Package, PackageCheck, Pencil, RefreshCw, Tags } from "lucide-react";
+import { useSearchParams } from "next/navigation";
+import { LOW_STOCK_THRESHOLD, reloadProducts, useProducts, useProductsError } from "@/lib/admin/productsData";
 import {
-  CATEGORIES,
-  LOW_STOCK_THRESHOLD,
-  getCategoryLabel,
-  getStockStatus,
-  reloadProducts,
-  useProducts,
-  useProductsError,
-} from "@/lib/admin/productsData";
-import ProductThumb from "@/components/admin/ProductThumb";
-import { Price, StatusBadge } from "@/components/admin/ui";
+  endOfDay,
+  getActiveDeliveries,
+  getDailySales,
+  getOrderStats,
+  getRecentOrders,
+  getSampleOrders,
+  getTopSelling,
+} from "@/lib/admin/sampleData";
+import { parseDayKey, selectedPastDay, useClock } from "@/lib/admin/useClock";
+import { useAuthStore } from "@/store/useAuthStore";
+import { displayName } from "@/components/admin/overview/TopBar";
+import StatCards from "@/components/admin/overview/StatCards";
+import SalesChart from "@/components/admin/overview/SalesChart";
+import TopSelling from "@/components/admin/overview/TopSelling";
+import LowStock from "@/components/admin/overview/LowStock";
+import RecentOrders from "@/components/admin/overview/RecentOrders";
+import ActiveDeliveries from "@/components/admin/overview/ActiveDeliveries";
 
-const RECENT_COUNT = 5;
-
-function StatCard({ icon: Icon, label, value, note, tone }) {
-  return (
-    <div className="rounded-[8px] border border-black/5 bg-white p-[16px] sm:p-[20px]">
-      <div className="flex items-start justify-between gap-[8px]">
-        <p className="text-[13px] font-semibold text-gray-500 sm:text-[14px]">{label}</p>
-        <span className={`flex h-[32px] w-[32px] shrink-0 items-center justify-center rounded-full sm:h-[36px] sm:w-[36px] ${tone}`}>
-          <Icon className="h-[16px] w-[16px] sm:h-[18px] sm:w-[18px]" strokeWidth={2} />
-        </span>
-      </div>
-      <p className="mt-[6px] text-[26px] font-extrabold text-[#1F2937] sm:text-[28px]">{value}</p>
-      <p className="mt-[2px] text-[12px] text-gray-500 sm:text-[13px]">{note}</p>
-    </div>
-  );
-}
-
+// Admin Overview.
+// The header strip (search, date picker, bell, account) is in AdminShell.
+// REAL (from the API): Low Stock Left, product count,
+//   product photos/names in Top Selling.
+// SAMPLE (src/lib/admin/sampleData.js, labelled "Sample" on screen): stat cards,
+//   sales chart, top selling numbers, recent orders, active deliveries.
+// ?day=yyyy-mm-dd (from the header calendar) shows a past day as of its end;
+// without it, today as of now, refreshed every minute.
 export default function AdminOverview() {
+  const user = useAuthStore((s) => s.user);
   const products = useProducts();
   const loadError = useProductsError();
+  const nowMs = useClock();
+  const dayParam = useSearchParams().get("day");
+  // "yyyy-mm-dd" of the picked past day, or null for today.
+  const pastDayKey = selectedPastDay(dayParam, nowMs) ? dayParam : null;
 
-  const header = (
-    <div>
-      <h1 className="text-[22px] font-extrabold text-[#1F2937] sm:text-[26px]">Overview</h1>
-      <p className="mt-[4px] text-[14px] text-gray-500">Live product data from the API.</p>
-    </div>
+  const sample = useMemo(() => {
+    if (nowMs == null) return null;
+    // The moment the sample is shown "as of": now, or the end of the picked day.
+    const past = parseDayKey(pastDayKey);
+    const asOf = past ? endOfDay(past) : new Date(nowMs);
+    const orders = getSampleOrders(asOf);
+    return {
+      stats: getOrderStats(orders, asOf),
+      days: getDailySales(orders, asOf, Boolean(past)),
+      topSelling: getTopSelling(orders, asOf),
+      recent: getRecentOrders(orders),
+      deliveries: getActiveDeliveries(orders),
+    };
+  }, [nowMs, pastDayKey]);
+
+  const alerts = useMemo(
+    () =>
+      products
+        ?.filter((p) => p.stock <= LOW_STOCK_THRESHOLD)
+        .sort((a, b) => a.stock - b.stock || a.name.localeCompare(b.name)),
+    [products]
   );
+  const productsById = useMemo(() => (products ? new Map(products.map((p) => [p.id, p])) : null), [products]);
 
-  if (products === undefined && loadError) {
-    return (
-      <div>
-        {header}
-        <div role="alert" className="mt-[20px] flex flex-col items-center rounded-[8px] border border-black/5 bg-white px-[16px] py-[48px] text-center">
-          <CloudOff className="h-[32px] w-[32px] text-gray-400" strokeWidth={1.75} />
-          <p className="mt-[12px] text-[16px] font-bold text-[#1F2937]">Couldn’t load products</p>
-          <p className="mt-[4px] break-words text-[14px] text-gray-500">{loadError}</p>
-          <button
-            type="button"
-            onClick={() => reloadProducts()}
-            className="mt-[16px] inline-flex items-center gap-[6px] rounded-[8px] bg-[#2F5D3A] px-[16px] py-[8px] text-[14px] font-semibold text-white hover:bg-[#3E5730]"
-          >
-            <RefreshCw className="h-[16px] w-[16px]" strokeWidth={2} />
-            Retry
-          </button>
-        </div>
-      </div>
-    );
-  }
+  if (!sample) return null; // server render only: the admin shows in the browser
 
-  if (products === undefined) {
-    return (
-      <div>
-        {header}
-        <div className="mt-[20px] grid grid-cols-2 gap-[12px] lg:grid-cols-4" aria-hidden="true">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="h-[118px] animate-pulse rounded-[8px] border border-black/5 bg-white" />
-          ))}
-        </div>
-        <div className="mt-[20px] h-[320px] animate-pulse rounded-[8px] border border-black/5 bg-white" aria-hidden="true" />
-        <p className="sr-only" aria-live="polite">Loading overview…</p>
-      </div>
-    );
-  }
-
-  const count = (status) => products.filter((p) => getStockStatus(p) === status).length;
-  const outOfStock = count("out");
-  const unavailable = products.filter((p) => !p.available).length;
-  const categoriesInUse = new Set(products.map((p) => p.category)).size;
-  const recent = [...products].sort((a, b) => b.createdAt - a.createdAt).slice(0, RECENT_COUNT);
+  const name = displayName(user);
+  const pastDay = parseDayKey(pastDayKey);
+  const viewingPast = pastDay !== null;
+  const dayLabel = pastDay?.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+  const shortLabel = pastDay?.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 
   return (
-    <div>
-      {header}
-
-      <div className="mt-[20px] grid grid-cols-2 gap-[12px] lg:grid-cols-4">
-        <StatCard
-          icon={Package}
-          label="Total products"
-          value={products.length}
-          note={`${outOfStock} out of stock · ${unavailable} unavailable`}
-          tone="bg-[#E6F0E1] text-[#2F5D3A]"
-        />
-        <StatCard
-          icon={PackageCheck}
-          label="In stock"
-          value={count("in")}
-          note={`More than ${LOW_STOCK_THRESHOLD} left`}
-          tone="bg-[#E6F0E1] text-[#2F5D3A]"
-        />
-        <StatCard
-          icon={AlertTriangle}
-          label="Low stock"
-          value={count("low")}
-          note={`${LOW_STOCK_THRESHOLD} or fewer left`}
-          tone="bg-[#FBE9D9] text-[#C6672E]"
-        />
-        <StatCard
-          icon={Tags}
-          label="Categories"
-          value={categoriesInUse}
-          note={`In use, of ${CATEGORIES.length}`}
-          tone="bg-[#E6F0E1] text-[#2F5D3A]"
-        />
+    <div className="flex flex-col gap-[16px] sm:gap-[20px]">
+      <div>
+        <h1 className="break-words text-[20px] font-extrabold text-[#1F2937] sm:text-[24px]">Welcome back, {name}!</h1>
+        {viewingPast ? (
+          <p className="mt-[2px] flex flex-wrap items-center gap-x-[8px] text-[12px] text-gray-500 sm:text-[13px]">
+            <span>
+              Showing <span className="font-semibold text-[#1F2937]">{dayLabel}</span>, as of the end of the day.
+            </span>
+            <Link href="/admin" className="font-semibold text-[#2F5D3A] hover:underline">
+              Back to today
+            </Link>
+          </p>
+        ) : (
+          <p className="mt-[2px] text-[12px] text-gray-500 sm:text-[13px]">Here is what&apos;s happening with FreshMart today.</p>
+        )}
       </div>
 
-      <section className="mt-[20px] rounded-[8px] border border-black/5 bg-white">
-        <div className="flex items-center justify-between border-b border-black/5 px-[16px] py-[14px] sm:px-[20px]">
-          <h2 className="text-[16px] font-extrabold text-[#1F2937] sm:text-[18px]">Recent products</h2>
-          <Link
-            href="/admin/products"
-            className="flex items-center gap-[2px] text-[14px] font-semibold text-[#2F5D3A] hover:underline"
-          >
-            View all
-            <ChevronRight className="h-[16px] w-[16px]" strokeWidth={2} />
-          </Link>
-        </div>
+      <StatCards stats={sample.stats} compareLabel={viewingPast ? "vs day before" : "vs yesterday"} />
 
-        {recent.length === 0 ? (
-          <div className="flex flex-col items-center px-[16px] py-[40px] text-center">
-            <p className="text-[15px] font-bold text-[#1F2937]">No products yet</p>
-            <Link
-              href="/admin/products/new"
-              className="mt-[12px] rounded-[8px] bg-[#2F5D3A] px-[16px] py-[8px] text-[14px] font-semibold text-white hover:bg-[#3E5730]"
-            >
-              Add product
-            </Link>
-          </div>
-        ) : (
-          <ul className="divide-y divide-black/5">
-            {recent.map((p) => (
-              <li key={p.id} className="flex items-center gap-[12px] px-[16px] py-[12px] sm:px-[20px]">
-                <ProductThumb src={p.image} alt={p.name} className="h-[44px] w-[44px]" />
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-[14px] font-semibold text-[#1F2937]">{p.name}</p>
-                  <p className="truncate text-[13px] text-gray-500">{getCategoryLabel(p.category)}</p>
-                </div>
-                <div className="hidden sm:block">
-                  <StatusBadge product={p} />
-                </div>
-                <div className="text-[14px]">
-                  <Price value={p.price} />
-                </div>
-                <Link
-                  href={`/admin/products/${encodeURIComponent(p.id)}/edit`}
-                  aria-label={`Edit ${p.name}`}
-                  className="flex h-[36px] w-[36px] shrink-0 items-center justify-center rounded-[8px] text-[#2F5D3A] hover:bg-black/5"
-                >
-                  <Pencil className="h-[16px] w-[16px]" strokeWidth={2} />
-                </Link>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+      <div className="grid gap-[12px] md:grid-cols-2 xl:grid-cols-[1.5fr_1fr_1fr]">
+        <div className="min-w-0 md:col-span-2 xl:col-span-1">
+          {/* Keyed by day, so a hovered point from another day doesn't carry over. */}
+          <SalesChart key={dayLabel ?? "today"} days={sample.days} />
+        </div>
+        <TopSelling
+          items={sample.topSelling}
+          productsById={productsById}
+          periodLabel={viewingPast ? `in the week to ${shortLabel}` : "this week"}
+        />
+        <LowStock alerts={alerts} total={products?.length ?? 0} error={products === undefined ? loadError : null} onRetry={reloadProducts} />
+      </div>
+
+      <RecentOrders orders={sample.recent} now={new Date(nowMs)} />
+      <ActiveDeliveries
+        orders={sample.deliveries}
+        emptyText={viewingPast ? "No deliveries were still on the road at the end of this day." : undefined}
+      />
     </div>
   );
 }

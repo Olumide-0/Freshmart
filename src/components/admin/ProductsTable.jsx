@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { ChevronLeft, ChevronRight, CloudOff, Package, Pencil, Plus, RefreshCw, Search, Trash2 } from "lucide-react";
 import {
   CATEGORIES,
@@ -61,7 +62,11 @@ function editHref(id) {
 export default function ProductsTable() {
   const products = useProducts();
   const loadError = useProductsError();
-  const [query, setQuery] = useState("");
+  // Search starts from ?q= (the header search sends people here with it), and
+  // follows it when the header searches again while this page is open.
+  const qParam = useSearchParams().get("q") ?? "";
+  const [query, setQuery] = useState(qParam);
+  const [syncedQ, setSyncedQ] = useState(qParam);
   const [category, setCategory] = useState("all");
   const [status, setStatus] = useState("all");
   const [sort, setSort] = useState("newest");
@@ -69,6 +74,14 @@ export default function ProductsTable() {
   const [pendingIds, setPendingIds] = useState([]);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleting, setDeleting] = useState(false);
+
+  // Adjust state while rendering when ?q= changes (React's recommended pattern
+  // instead of an effect): new search, back to page 1.
+  if (qParam !== syncedQ) {
+    setSyncedQ(qParam);
+    setQuery(qParam);
+    setPage(1);
+  }
 
   const loading = products === undefined;
   const term = query.trim().toLowerCase();

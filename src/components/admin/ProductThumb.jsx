@@ -7,7 +7,8 @@ import { ImageOff } from "lucide-react";
 function isRenderable(src) {
   if (src && typeof src === "object" && src.src) return true; // static import
   if (typeof src !== "string") return false;
-  return src.startsWith("/") || /^https?:\/\/\S+$/i.test(src);
+  // blob: is the form's local preview while an upload is running.
+  return src.startsWith("/") || src.startsWith("blob:") || /^https?:\/\/\S+$/i.test(src);
 }
 
 export default function ProductThumb({ src, alt, className = "h-[48px] w-[48px]" }) {

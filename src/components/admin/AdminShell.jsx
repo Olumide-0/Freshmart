@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 import { LayoutDashboard, Package, CirclePlus, Store, Menu, X } from "lucide-react";
 import logo from "@/assets/image/fresh mart logo.png";
 import Toaster from "@/components/admin/Toast";
+import TopBar from "@/components/admin/overview/TopBar";
 import { logout } from "@/lib/auth";
 import { useAuthStore } from "@/store/useAuthStore";
 
@@ -155,6 +156,15 @@ export default function AdminShell({ children }) {
       )}
 
       <div className="lg:pl-[240px]">
+        {/* Header strip on every admin page. Desktop: sticky, and 72px tall
+            including its border, like the sidebar's logo row, so both bottom
+            borders form one line. Below lg it scrolls away under the mobile bar. */}
+        <header className="border-b border-black/5 bg-white lg:sticky lg:top-0 lg:z-20 lg:h-[72px]">
+          <div className="mx-auto flex h-full w-full max-w-[1200px] flex-col justify-center px-[16px] py-[12px] sm:px-[24px] lg:px-[40px] lg:py-0">
+            <TopBar />
+          </div>
+        </header>
+
         <div className="mx-auto w-full max-w-[1200px] px-[16px] py-[24px] sm:px-[24px] lg:px-[40px] lg:py-[32px]">
           {children}
         </div>
