@@ -1,9 +1,9 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, CloudOff, Loader2, Package, Plus, RefreshCw, X } from "lucide-react";
+import { ArrowLeft, CloudOff, Loader2, Package, RefreshCw } from "lucide-react";
 import {
   BADGES,
   CATEGORIES,
@@ -18,7 +18,8 @@ import {
   useProductError,
   validateProduct,
 } from "@/lib/admin/productsData";
-import ProductThumb from "@/components/admin/ProductThumb";
+import ImageDropzone from "@/components/admin/ImageDropzone";
+import { CLOUDINARY_IMAGE_PREFIX, checkImageFile, uploadImage } from "@/lib/admin/uploadImage";
 import { AvailabilitySwitch } from "@/components/admin/ui";
 import { toast } from "@/components/admin/Toast";
 
@@ -182,7 +183,6 @@ export default function ProductForm({ productId }) {
 function FormBody({ product }) {
   const router = useRouter();
   const isEdit = product !== null;
-  const nextGalleryKey = useRef(0);
 
   const [values, setValues] = useState(() => ({
     name: product?.name ?? "",
@@ -198,15 +198,16 @@ function FormBody({ product }) {
     available: product?.available ?? true,
     imageInput: "", // empty = keep the current image (edit) / placeholder (new)
   }));
-  const [gallery, setGallery] = useState(() =>
-    (product?.gallery ?? []).map((value, i) => ({ key: `seed-${i}`, value }))
-  );
-  const [galleryInput, setGalleryInput] = useState("");
-  const [galleryInputError, setGalleryInputError] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [saving, setSaving] = useState(false);
   // Field errors from an API 400, keyed by field; each clears when that field is edited.
   const [apiErrors, setApiErrors] = useState({});
+  // Image upload: preview is a local blob: URL while uploading.
+  const [upload, setUpload] = useState({ uploading: false, preview: null, error: "" });
+  const uploadAbort = useRef(null);
+
+  // Cancel a running upload when the form closes.
+  useEffect(() => () => uploadAbort.current?.abort(), []);
 
   // The current image is kept unless a new path/URL is typed ("" = placeholder).
   const currentImage = product?.image ?? "";
@@ -225,14 +226,53 @@ function FormBody({ product }) {
     unit: values.unit,
     available: values.available,
     image: typedImage || currentImage || "",
-    gallery: gallery.map((g) => g.value),
   };
   const allErrors = validateProduct(candidate);
   // Client errors appear after the first submit attempt, then update live as you
   // type. API errors fill in for fields the client check didn't flag.
   const errors = { ...apiErrors, ...(submitted ? allErrors : {}) };
 
-  const previewSrc = typedImage ? (isImageRef(typedImage) ? typedImage : null) : currentImage;
+  const previewSrc =
+    upload.preview ?? (typedImage ? (isImageRef(typedImage) ? typedImage : null) : currentImage);
+  // next.config.mjs only allows our Cloudinary images, so other sites' URLs
+  // won't show on the storefront.
+  const offsiteImage =
+    /^https?:\/\//i.test(typedImage) && !typedImage.startsWith(CLOUDINARY_IMAGE_PREFIX) && isImageRef(typedImage);
+
+  // Checks, uploads and fills the image field (Choose image, drop, Ctrl+V).
+  const uploadFile = async (file) => {
+    if (uploadAbort.current) return; // one upload at a time
+    const problem = checkImageFile(file);
+    if (problem) {
+      setUpload({ uploading: false, preview: null, error: problem });
+      return;
+    }
+    const controller = new AbortController();
+    uploadAbort.current = controller;
+    const preview = URL.createObjectURL(file);
+    setUpload({ uploading: true, preview, error: "" });
+    try {
+      const url = await uploadImage(file, { signal: controller.signal });
+      setValues((v) => ({ ...v, imageInput: url }));
+      clearApiError("image");
+      setUpload({ uploading: false, preview: null, error: "" });
+    } catch (err) {
+      if (controller.signal.aborted) return; // form closed
+      setUpload({ uploading: false, preview: null, error: err?.message || "Upload failed." });
+    } finally {
+      uploadAbort.current = null;
+      URL.revokeObjectURL(preview);
+    }
+  };
+
+  // Ctrl+V anywhere in the form: an image on the clipboard is uploaded.
+  // Pasting text into a field works as usual.
+  const handlePaste = (e) => {
+    const file = Array.from(e.clipboardData?.files ?? []).find((f) => f.type.startsWith("image/"));
+    if (!file) return;
+    e.preventDefault();
+    uploadFile(file);
+  };
 
   const clearApiError = (field) =>
     setApiErrors((prev) => {
@@ -245,6 +285,7 @@ function FormBody({ product }) {
   const setField = (field) => (e) => {
     setValues((v) => ({ ...v, [field]: e.target.value }));
     clearApiError(field === "imageInput" ? "image" : field);
+    if (field === "imageInput") setUpload((u) => (u.error ? { ...u, error: "" } : u));
     // The API checks oldPrice against price, so editing either clears both.
     if (field === "price") clearApiError("oldPrice");
   };
@@ -258,31 +299,9 @@ function FormBody({ product }) {
     clearApiError(field);
   };
 
-  const addGalleryImage = () => {
-    const value = galleryInput.trim();
-    if (!value) {
-      setGalleryInputError("Enter a path or URL to add");
-      return;
-    }
-    if (!isImageRef(value)) {
-      setGalleryInputError("Use a path starting with / or a full http(s) URL");
-      return;
-    }
-    const key = `added-${nextGalleryKey.current++}`;
-    setGallery((g) => [...g, { key, value }]);
-    setGalleryInput("");
-    setGalleryInputError("");
-    clearApiError("gallery");
-  };
-
-  const removeGalleryImage = (key) => {
-    setGallery((g) => g.filter((item) => item.key !== key));
-    clearApiError("gallery");
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (saving) return;
+    if (saving || upload.uploading) return;
     setSubmitted(true);
     setApiErrors({});
 
@@ -304,8 +323,9 @@ function FormBody({ product }) {
       weight: candidate.weight,
       unit: candidate.unit,
       available: candidate.available,
-      gallery: candidate.gallery,
       // Every field is sent; an edit keeps the current image unless a new one was typed.
+      // gallery is left out: the form no longer edits it, and PATCH keeps the
+      // product's current gallery (a new product gets the API's default).
       image: typedImage || currentImage,
     };
 
@@ -339,14 +359,14 @@ function FormBody({ product }) {
   };
 
   const imageHint = isEdit
-    ? "Leave empty to keep the current image. Real uploads come later."
-    : "A path starting with / or a full http(s) URL. Leave empty to use the placeholder.";
+    ? "Upload an image, or type a path or URL. Leave empty to keep the current image."
+    : "Upload an image, or type a path starting with / or a full URL. Leave empty to use the placeholder.";
 
   return (
     <div>
       <FormHeader isEdit={isEdit} />
 
-      <form onSubmit={handleSubmit} noValidate className="mt-[20px] grid gap-[16px] lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start">
+      <form onSubmit={handleSubmit} onPaste={handlePaste} noValidate className="mt-[20px] grid gap-[16px] lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start">
         {/* Details */}
         <div className="flex flex-col gap-[16px] rounded-[8px] border border-black/5 bg-white p-[20px] sm:p-[24px]">
           <h2 className="text-[18px] font-extrabold text-[#1F2937]">Product details</h2>
@@ -517,7 +537,13 @@ function FormBody({ product }) {
           {/* Image */}
           <div className="flex flex-col gap-[12px] rounded-[8px] border border-black/5 bg-white p-[20px]">
             <h2 className="text-[18px] font-extrabold text-[#1F2937]">Image</h2>
-            <ProductThumb src={previewSrc} alt={values.name || "Product image preview"} className="h-[180px] w-full" />
+            <ImageDropzone
+              src={previewSrc}
+              alt={values.name || "Product image preview"}
+              uploading={upload.uploading}
+              error={upload.error}
+              onFile={uploadFile}
+            />
             <Field id="pf-image" label="Image path or URL" optional hint={imageHint} error={errors.image}>
               <input
                 id="pf-image"
@@ -530,6 +556,11 @@ function FormBody({ product }) {
                 className={inputClass(errors.image)}
               />
             </Field>
+            {offsiteImage && !errors.image && (
+              <p className="text-[13px] text-[#B45309]">
+                Images from other websites won’t show on the storefront. Upload the image instead.
+              </p>
+            )}
             {isEdit && typedImage && (
               <button
                 type="button"
@@ -542,72 +573,6 @@ function FormBody({ product }) {
                 Keep current image
               </button>
             )}
-          </div>
-
-          {/* Gallery */}
-          <div className="flex flex-col gap-[12px] rounded-[8px] border border-black/5 bg-white p-[20px]">
-            <h2 className="text-[18px] font-extrabold text-[#1F2937]">
-              Gallery <span className="text-[14px] font-normal text-gray-500">(optional)</span>
-            </h2>
-            {gallery.length > 0 ? (
-              <ul className="grid grid-cols-4 gap-[8px]">
-                {gallery.map((item, i) => (
-                  <li key={item.key} className="relative">
-                    <ProductThumb src={item.value} alt={`Gallery image ${i + 1}`} className="aspect-square w-full" />
-                    <button
-                      type="button"
-                      onClick={() => removeGalleryImage(item.key)}
-                      aria-label={`Remove gallery image ${i + 1}`}
-                      className="absolute right-[4px] top-[4px] flex h-[22px] w-[22px] items-center justify-center rounded-full bg-white/90 text-[#1F2937] shadow-sm hover:bg-white"
-                    >
-                      <X className="h-[12px] w-[12px]" strokeWidth={2.5} />
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-[13px] text-gray-500">No gallery images.</p>
-            )}
-            <div className="flex flex-col gap-[6px]">
-              <label htmlFor="pf-gallery" className="text-[14px] font-semibold text-[#1F2937]">
-                Add image path or URL
-              </label>
-              <div className="flex gap-[8px]">
-                <input
-                  id="pf-gallery"
-                  type="text"
-                  value={galleryInput}
-                  onChange={(e) => {
-                    setGalleryInput(e.target.value);
-                    setGalleryInputError("");
-                  }}
-                  onKeyDown={(e) => {
-                    // Enter adds the image instead of submitting the whole form.
-                    if (e.key === "Enter") {
-                      e.preventDefault();
-                      addGalleryImage();
-                    }
-                  }}
-                  placeholder="/images/extra.png"
-                  aria-invalid={Boolean(galleryInputError || errors.gallery)}
-                  aria-describedby={galleryInputError || errors.gallery ? "pf-gallery-error" : undefined}
-                  className={`${inputClass(galleryInputError || errors.gallery)} min-w-0 flex-1`}
-                />
-                <button
-                  type="button"
-                  onClick={addGalleryImage}
-                  className="flex shrink-0 items-center gap-[4px] rounded-[8px] border border-[#D8DADD] px-[12px] text-[14px] font-semibold text-[#1F2937] hover:bg-black/5"
-                >
-                  <Plus className="h-[14px] w-[14px]" strokeWidth={2.5} />
-                  Add
-                </button>
-              </div>
-              {(galleryInputError || errors.gallery) && (
-                <p id="pf-gallery-error" className="text-sm text-red-500">
-                  {galleryInputError || errors.gallery}
-                </p>
-              )}
-            </div>
           </div>
 
           {/* Availability */}
@@ -636,11 +601,12 @@ function FormBody({ product }) {
           </Link>
           <button
             type="submit"
-            disabled={saving}
+            disabled={saving || upload.uploading}
+            title={upload.uploading ? "Wait for the image to finish uploading" : undefined}
             className="flex items-center justify-center gap-[8px] rounded-[8px] bg-[#2F5D3A] px-[20px] py-[10px] text-[14px] font-semibold text-white hover:bg-[#3E5730] disabled:opacity-60"
           >
-            {saving && <Loader2 className="h-[16px] w-[16px] animate-spin" strokeWidth={2} />}
-            {saving ? "Saving…" : isEdit ? "Save changes" : "Add product"}
+            {(saving || upload.uploading) && <Loader2 className="h-[16px] w-[16px] animate-spin" strokeWidth={2} />}
+            {saving ? "Saving…" : upload.uploading ? "Uploading image…" : isEdit ? "Save changes" : "Add product"}
           </button>
         </div>
       </form>
